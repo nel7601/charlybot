@@ -1,4 +1,5 @@
 import ModbusRTU from 'modbus-serial';
+import { env } from '$env/dynamic/private';
 
 /** @typedef {Object} ModbusConnectionConfig
  * @property {string} host - Modbus TCP host
@@ -14,13 +15,17 @@ let connectionPromise = null;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 3;
 
+// Configuration from environment variables with fallbacks
 const CONFIG = {
-	host: '192.168.71.28',
-	port: 502,
-	unitId: 1,
-	timeout: 5000,
+	host: env.MODBUS_HOST || 'localhost',
+	port: parseInt(env.MODBUS_PORT || '502'),
+	unitId: parseInt(env.MODBUS_UNIT_ID || '1'),
+	timeout: parseInt(env.MODBUS_TIMEOUT || '10000'), // Increased to 10 seconds for localhost
 	reconnectInterval: 3000
 };
+
+// Log configuration on startup (once)
+console.log(`[Modbus] Configuration: ${CONFIG.host}:${CONFIG.port} (Unit ID: ${CONFIG.unitId}, Timeout: ${CONFIG.timeout}ms)`);
 
 /**
  * Get or create Modbus client connection (singleton pattern)

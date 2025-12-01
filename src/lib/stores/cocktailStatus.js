@@ -66,11 +66,18 @@ export function startStatusPolling(cocktailId) {
 		clearInterval(pollingInterval);
 	}
 
-	// Poll every 500ms
+	// Poll every 2000ms (reduced frequency to avoid overwhelming the device)
 	pollingInterval = setInterval(async () => {
 		try {
-			const response = await fetch('/api/status');
-			if (!response.ok) throw new Error('Status fetch failed');
+			const response = await fetch('/api/status', {
+				// Add timeout to prevent hanging requests
+				signal: AbortSignal.timeout(4000)
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => ({ message: 'Status fetch failed' }));
+				throw new Error(errorData.message || 'Status fetch failed');
+			}
 
 			const data = await response.json();
 
@@ -78,7 +85,8 @@ export function startStatusPolling(cocktailId) {
 				...state,
 				robotState: data.robotState,
 				isConnected: data.isConnected,
-				progress: calculateProgress(data.robotState)
+				progress: calculateProgress(data.robotState),
+				error: null // Clear error on success
 			}));
 
 			// Stop polling when drink is ready
@@ -86,13 +94,14 @@ export function startStatusPolling(cocktailId) {
 				stopStatusPolling();
 			}
 		} catch (error) {
+			console.error('[Status] Polling error:', error.message);
 			cocktailStatus.update(state => ({
 				...state,
 				error: error,
 				isConnected: false
 			}));
 		}
-	}, 500);
+	}, 2000);
 }
 
 /**
@@ -106,20 +115,32 @@ export function stopStatusPolling() {
 }
 
 /**
- * Calculate progress based on active states
+ * Calculate progress based on the current cocktail's steps
  * @param {RobotState} state
  * @returns {number} Progress percentage (0-100)
  */
 function calculateProgress(state) {
-	const steps = [
-		state.cupHolder,
-		state.muddling || state.syrup || state.lime,
+	// Import cocktails to get current cocktail steps
+	// For now, count all true values in the state
+	const allSteps = [
+		state.muddling,
+		state.syrup,
+		state.lime,
 		state.ice,
-		state.whiteRum || state.darkRum || state.whiskey,
-		state.soda || state.coke,
+		state.whiteRum,
+		state.darkRum,
+		state.soda,
+		state.coke,
+		state.whiskey,
 		state.drinkReady
 	];
 
-	const completed = steps.filter(Boolean).length;
-	return Math.round((completed / steps.length) * 100);
+	const completed = allSteps.filter(Boolean).length;
+	const total = allSteps.filter(step => step !== undefined).length;
+
+	if (state.drinkReady) {
+		return 100;
+	}
+
+	return total > 0 ? Math.round((completed / total) * 100) : 0;
 }
