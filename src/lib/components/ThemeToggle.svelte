@@ -25,21 +25,20 @@
 	function applyTheme(theme) {
 		if (typeof document !== 'undefined') {
 			document.documentElement.setAttribute('data-theme', theme);
-			document.documentElement.classList.toggle('dark', theme === 'dark');
 		}
 	}
 </script>
 
 {#if mounted}
 <button
-	class="btn btn-circle btn-ghost text-white hover:bg-white/10"
+	class="btn btn-circle btn-ghost"
 	onclick={toggleTheme}
 	aria-label="Toggle theme"
 >
 	{#if isDark}
-		<Sun class="w-5 h-5" />
-	{:else}
 		<Moon class="w-5 h-5" />
+	{:else}
+		<Sun class="w-5 h-5" />
 	{/if}
 </button>
 {/if}

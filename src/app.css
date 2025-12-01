@@ -11,6 +11,96 @@
   --font-family-body: "Inter", sans-serif;
 }
 
+/* Light Theme - Based on #1ABBB4 */
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Primary colors - Based on #1ABBB4 (Turquoise) */
+  --color-primary: oklch(70% 0.15 190);
+  --color-primary-content: oklch(100% 0 0);
+
+  /* Secondary colors - Complementary coral */
+  --color-secondary: oklch(72% 0.18 25);
+  --color-secondary-content: oklch(100% 0 0);
+
+  /* Accent colors - Bright cyan */
+  --color-accent: oklch(75% 0.16 210);
+  --color-accent-content: oklch(100% 0 0);
+
+  /* Neutral colors */
+  --color-neutral: oklch(30% 0.01 250);
+  --color-neutral-content: oklch(95% 0 0);
+
+  /* Base colors - Very light backgrounds with turquoise tint */
+  --color-base-100: oklch(99% 0.005 190);
+  --color-base-200: oklch(96% 0.008 190);
+  --color-base-300: oklch(92% 0.012 190);
+  --color-base-content: oklch(25% 0.01 250);
+
+  /* State colors */
+  --color-info: oklch(70% 0.15 240);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(70% 0.15 150);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(75% 0.15 80);
+  --color-warning-content: oklch(25% 0 0);
+  --color-error: oklch(68% 0.18 15);
+  --color-error-content: oklch(100% 0 0);
+
+  /* Border radius */
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.5rem;
+
+  /* Border */
+  --border: 1px;
+}
+
+/* Dark Theme - Based on #1ABBB4 */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Primary colors - Based on #1ABBB4 (Turquoise) */
+  --color-primary: oklch(70% 0.15 190);
+  --color-primary-content: oklch(100% 0 0);
+
+  /* Secondary colors - Complementary coral */
+  --color-secondary: oklch(72% 0.18 25);
+  --color-secondary-content: oklch(100% 0 0);
+
+  /* Accent colors - Bright cyan */
+  --color-accent: oklch(75% 0.16 210);
+  --color-accent-content: oklch(15% 0 0);
+
+  /* Neutral colors */
+  --color-neutral: oklch(85% 0.01 190);
+  --color-neutral-content: oklch(20% 0 0);
+
+  /* Base colors - Dark backgrounds with turquoise tint */
+  --color-base-100: oklch(20% 0.01 190);
+  --color-base-200: oklch(17% 0.01 190);
+  --color-base-300: oklch(14% 0.015 190);
+  --color-base-content: oklch(90% 0.01 190);
+
+  /* State colors */
+  --color-info: oklch(70% 0.15 240);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(70% 0.15 150);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(75% 0.15 80);
+  --color-warning-content: oklch(15% 0 0);
+  --color-error: oklch(68% 0.18 15);
+  --color-error-content: oklch(100% 0 0);
+
+  /* Border radius */
+  --radius-box: 0.5rem;
+  --radius-field: 0.25rem;
+  --radius-selector: 0.5rem;
+
+  /* Border */
+  --border: 1px;
+}
+
 @keyframes pour {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(0); }
