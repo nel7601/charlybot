@@ -51,11 +51,11 @@ function monitorAddressAndReset(client, cocktailAddress, cocktailName) {
 				}
 			}
 
-			// If address 91 is 1 (true), reset ALL cocktail triggers (100-106)
+			// If address 91 is 1 (true), reset ALL cocktail triggers (100-107)
 			if (signalValue === true) {
 				clearInterval(intervalId);
 				isResetting = true;
-				console.log(`[Modbus] ✓ Address ${MONITORING_ADDRESS} activated! Resetting all cocktail addresses (100-106)...`);
+				console.log(`[Modbus] ✓ Address ${MONITORING_ADDRESS} activated! Resetting all cocktail addresses (100-107)...`);
 				await resetAllCocktailAddresses(client);
 				console.log(`[Modbus] ✓ Reset complete for ${cocktailName}`);
 			}
@@ -75,14 +75,14 @@ function monitorAddressAndReset(client, cocktailAddress, cocktailName) {
 }
 
 /**
- * Reset ALL cocktail addresses (100-106) to 0
+ * Reset ALL cocktail addresses (100-107) to 0
  * This ensures only one cocktail can be active at a time
  * @param {import('modbus-serial')} client
  */
 async function resetAllCocktailAddresses(client) {
-	const COCKTAIL_ADDRESSES = [100, 101, 102, 103, 104, 105, 106];
+	const COCKTAIL_ADDRESSES = [100, 101, 102, 103, 104, 105, 106, 107];
 
-	console.log(`[Modbus] Resetting all cocktail addresses (100-106)...`);
+	console.log(`[Modbus] Resetting all cocktail addresses (100-107)...`);
 
 	for (const address of COCKTAIL_ADDRESSES) {
 		try {
@@ -116,13 +116,17 @@ const COCKTAIL_RECIPES = {
 		address: 103,
 		ingredients: [134, 139] // ice, whiskey
 	},
-	'whiskey-coke': {
+	'neat-whiskey': {
 		address: 104,
-		ingredients: [134, 139, 141, 142, 143] // ice, whiskey, coke, stirring, straw
+		ingredients: [139] // whiskey only
 	},
 	'whiskey-highball': {
 		address: 105,
 		ingredients: [134, 139, 140, 142, 143] // ice, whiskey, soda, stirring, straw
+	},
+	'whiskey-coke': {
+		address: 106,
+		ingredients: [134, 139, 141, 142, 143] // ice, whiskey, coke, stirring, straw
 	}
 };
 

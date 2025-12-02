@@ -52,9 +52,9 @@ export async function POST({ request }) {
 			console.log('Custom drink: Activated straw at address 143');
 		}
 
-		// Write to custom drink address (106)
-		await client.writeCoil(106, true);
-		console.log('Custom drink: Activated custom address 106');
+		// Write to custom drink address (107)
+		await client.writeCoil(107, true);
+		console.log('Custom drink: Activated custom address 107');
 
 		// Write to start address (96) to tell robot to begin
 		await client.writeCoil(96, true);

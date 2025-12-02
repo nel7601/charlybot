@@ -24,7 +24,8 @@ export const cocktails = [
 		modbusAddress: 100,
 		category: 'rum',
 		steps: [
-			{ label: 'Muddling', stateKey: 'muddling', description: 'Pick and place mint leaves and muddle it' },
+			{ label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass' },
+			{ label: 'Muddling', stateKey: 'muddling', description: 'Muddling the mint leaves' },
 			{ label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into a glass' },
 			{ label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into a glass' },
 			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
@@ -73,39 +74,39 @@ export const cocktails = [
 		]
 	},
 	{
-		id: 'whiskey-coke',
-		name: 'Whiskey and Coke',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/wzupxr1580737578.jpg',
+		id: 'neat-whiskey',
+		name: 'Neat Whiskey',
+		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/5s22081504883416.jpg',
 		modbusAddress: 104,
 		category: 'whiskey',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
 			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' },
 			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
 		]
 	},
-	// {
-	// 	id: 'neat-whiskey',
-	// 	name: 'Neat Whiskey',
-	// 	imageUrl: 'https://www.thecocktaildb.com/images/media/drink/5s22081504883416.jpg',
-	// 	modbusAddress: 105,
-	// 	category: 'whiskey',
-	// 	steps: [
-	// 		{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-	// 		{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
-	// 	]
-	// },
 	{
 		id: 'whiskey-highball',
 		name: 'Whiskey Highball',
 		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/n0sx531504372951.jpg',
-		modbusAddress: 106,
+		modbusAddress: 105,
 		category: 'whiskey',
 		steps: [
 			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
 			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
 			{ label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass' },
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+		]
+	},
+	{
+		id: 'whiskey-coke',
+		name: 'Whiskey and Coke',
+		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/wzupxr1580737578.jpg',
+		modbusAddress: 106,
+		category: 'whiskey',
+		steps: [
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
+			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
+			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' },
 			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
 		]
 	}
@@ -123,7 +124,7 @@ export function getCocktailById(id) {
 			id: 'custom',
 			name: 'Custom Drink',
 			imageUrl: '',
-			modbusAddress: 0,
+			modbusAddress: 107,
 			category: 'custom',
 			steps: [
 				{ label: 'Preparing', stateKey: 'preparing', description: 'Preparing your custom drink' },

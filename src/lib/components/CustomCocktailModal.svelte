@@ -5,7 +5,7 @@
 	let { isOpen = $bindable(false), onClose, onOrder } = $props();
 
 	const availableIngredients = [
-		{ id: 'mint', label: 'Mint', icon: '🌿', stateKey: 'muddling', category: 'other' },
+		{ id: 'mint', label: 'Mint', icon: '🌿', stateKey: 'mint', category: 'other' },
 		{ id: 'ice', label: 'Ice', icon: '🧊', stateKey: 'ice', category: 'other' },
 		{ id: 'syrup', label: 'Syrup', icon: '🍯', stateKey: 'syrup', category: 'other' },
 		{ id: 'lime', label: 'Lime', icon: '🍋', stateKey: 'lime', category: 'other' },

@@ -2,15 +2,16 @@ import { writable } from 'svelte/store';
 
 /**
  * @typedef {Object} RobotState
- * @property {boolean} muddling - Address 32
- * @property {boolean} syrup - Address 33
- * @property {boolean} lime - Address 34
- * @property {boolean} ice - Address 35
- * @property {boolean} whiteRum - Address 36
- * @property {boolean} darkRum - Address 37
- * @property {boolean} soda - Address 38
- * @property {boolean} coke - Address 39
- * @property {boolean} whiskey - Address 40
+ * @property {boolean} mint - Address 32
+ * @property {boolean} muddling - Address 33
+ * @property {boolean} ice - Address 34
+ * @property {boolean} syrup - Address 35
+ * @property {boolean} lime - Address 36
+ * @property {boolean} whiteRum - Address 37
+ * @property {boolean} darkRum - Address 38
+ * @property {boolean} whiskey - Address 39
+ * @property {boolean} soda - Address 40
+ * @property {boolean} coke - Address 41
  * @property {boolean} cupHolder - Address 90
  * @property {boolean} drinkReady - Address 91
  * @property {boolean} waitingRecipe - Address 92
@@ -29,18 +30,19 @@ import { writable } from 'svelte/store';
 export const cocktailStatus = writable({
 	activeCocktailId: null,
 	robotState: {
-		muddling: false,
-		syrup: false,
-		lime: false,
-		ice: false,
-		whiteRum: false,
-		darkRum: false,
-		soda: false,
-		coke: false,
-		whiskey: false,
-		cupHolder: false,
-		drinkReady: false,
-		waitingRecipe: false
+		mint: false,         // Address 32
+		muddling: false,     // Address 33
+		ice: false,          // Address 34
+		syrup: false,        // Address 35
+		lime: false,         // Address 36
+		whiteRum: false,     // Address 37
+		darkRum: false,      // Address 38
+		whiskey: false,      // Address 39
+		soda: false,         // Address 40
+		coke: false,         // Address 41
+		cupHolder: false,    // Address 90
+		drinkReady: false,   // Address 91
+		waitingRecipe: false // Address 92
 	},
 	isConnected: false,
 	error: null,
@@ -123,15 +125,16 @@ function calculateProgress(state) {
 	// Import cocktails to get current cocktail steps
 	// For now, count all true values in the state
 	const allSteps = [
+		state.mint,
 		state.muddling,
+		state.ice,
 		state.syrup,
 		state.lime,
-		state.ice,
 		state.whiteRum,
 		state.darkRum,
+		state.whiskey,
 		state.soda,
 		state.coke,
-		state.whiskey,
 		state.drinkReady
 	];
 

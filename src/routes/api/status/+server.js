@@ -11,45 +11,47 @@ async function readRobotState(client) {
 	const state = {};
 
 	try {
-		// Read step states in one batch (addresses 32-40: 9 consecutive addresses)
+		// Read step states in one batch (addresses 32-41: 10 consecutive addresses)
 		let stepStates;
 		try {
-			stepStates = await client.readDiscreteInputs(32, 9);
+			stepStates = await client.readDiscreteInputs(32, 10);
 		} catch (readError) {
 			// If discrete inputs fail, try coils
 			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				stepStates = await client.readCoils(32, 9);
+				stepStates = await client.readCoils(32, 10);
 			} else {
 				throw readError;
 			}
 		}
 
-		// Map step states to keys
-		state.muddling = stepStates.data[0] === true;
-		state.syrup = stepStates.data[1] === true;
-		state.lime = stepStates.data[2] === true;
-		state.ice = stepStates.data[3] === true;
-		state.whiteRum = stepStates.data[4] === true;
-		state.darkRum = stepStates.data[5] === true;
-		state.soda = stepStates.data[6] === true;
-		state.coke = stepStates.data[7] === true;
-		state.whiskey = stepStates.data[8] === true;
+		// Map step states to keys (according to Modbus table)
+		state.mint = stepStates.data[0] === true;        // Address 32
+		state.muddling = stepStates.data[1] === true;    // Address 33
+		state.ice = stepStates.data[2] === true;         // Address 34
+		state.syrup = stepStates.data[3] === true;       // Address 35
+		state.lime = stepStates.data[4] === true;        // Address 36
+		state.whiteRum = stepStates.data[5] === true;    // Address 37
+		state.darkRum = stepStates.data[6] === true;     // Address 38
+		state.whiskey = stepStates.data[7] === true;     // Address 39
+		state.soda = stepStates.data[8] === true;        // Address 40
+		state.coke = stepStates.data[9] === true;        // Address 41
 
 	} catch (stepError) {
 		// Silently set defaults on error to avoid spam
 		if (!stepError.message.includes('Timed out')) {
-			console.warn('[Modbus] Could not read step states (32-40):', stepError.message);
+			console.warn('[Modbus] Could not read step states (32-41):', stepError.message);
 		}
 		// Set all step states to false on error
+		state.mint = false;
 		state.muddling = false;
+		state.ice = false;
 		state.syrup = false;
 		state.lime = false;
-		state.ice = false;
 		state.whiteRum = false;
 		state.darkRum = false;
+		state.whiskey = false;
 		state.soda = false;
 		state.coke = false;
-		state.whiskey = false;
 	}
 
 	try {
@@ -122,17 +124,18 @@ export async function GET() {
 
 function getDefaultState() {
 	return {
-		muddling: false,
-		syrup: false,
-		lime: false,
-		ice: false,
-		whiteRum: false,
-		darkRum: false,
-		soda: false,
-		coke: false,
-		whiskey: false,
-		cupHolder: false,
-		drinkReady: false,
-		waitingRecipe: false
+		mint: false,         // Address 32
+		muddling: false,     // Address 33
+		ice: false,          // Address 34
+		syrup: false,        // Address 35
+		lime: false,         // Address 36
+		whiteRum: false,     // Address 37
+		darkRum: false,      // Address 38
+		whiskey: false,      // Address 39
+		soda: false,         // Address 40
+		coke: false,         // Address 41
+		cupHolder: false,    // Address 90
+		drinkReady: false,   // Address 91
+		waitingRecipe: false // Address 92
 	};
 }
