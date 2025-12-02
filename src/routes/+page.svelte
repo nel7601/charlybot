@@ -1,4 +1,5 @@
 <script>
+	import { onMount } from 'svelte';
 	import { cocktails } from '$lib/data/cocktails.js';
 	import { startStatusPolling } from '$lib/stores/cocktailStatus.js';
 	import CocktailCard from '$lib/components/CocktailCard.svelte';
@@ -11,6 +12,42 @@
 	let loading = $state(false);
 	let errorMessage = $state('');
 	let showCustomModal = $state(false);
+	let initializing = $state(true);
+
+	/**
+	 * Check robot initial state on app load
+	 * - If address 92 = 1: Robot ready, show menu
+	 * - If address 92 = 0: Robot busy, detect and show active cocktail
+	 */
+	async function checkInitialState() {
+		try {
+			const response = await fetch('/api/initial-state');
+			const data = await response.json();
+
+			console.log('[Initial State]', data);
+
+			if (data.activeCocktailId) {
+				// Robot is busy, start monitoring the active cocktail
+				console.log(`[Initial State] Resuming monitoring for ${data.activeCocktailId}`);
+				startStatusPolling(data.activeCocktailId);
+			} else if (data.robotReady) {
+				// Robot ready, just show menu (default state)
+				console.log('[Initial State] Robot ready - showing menu');
+			} else if (data.error) {
+				errorMessage = data.error;
+			}
+		} catch (error) {
+			console.error('[Initial State] Error checking robot state:', error);
+			errorMessage = 'Failed to connect to robot. Please check connection.';
+		} finally {
+			initializing = false;
+		}
+	}
+
+	// Run initial state check when component mounts
+	onMount(() => {
+		checkInitialState();
+	});
 
 	/**
 	 * Handle cocktail selection
@@ -121,28 +158,38 @@
 
 	<!-- Cocktail Menu -->
 	<section class="relative container mx-auto px-8 py-16 max-w-7xl">
-		<div class="mb-12 text-center">
-			<h2 class="text-5xl md:text-6xl font-bold text-gray-800 mb-6">Select Your Drink</h2>
-			<p class="text-2xl md:text-3xl text-gray-600">Choose from our premium automated cocktail selection</p>
-			<div class="mt-6 h-1.5 w-32 mx-auto krka-accent-gradient rounded-full"></div>
-		</div>
-
-		<div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto" style="animation: fadeIn 0.8s ease-out;">
-			<!-- Regular Cocktails -->
-			{#each cocktails as cocktail, index}
-				<div style="animation: slideUp 0.5s ease-out {index * 0.1}s both;">
-					<CocktailCard
-						{cocktail}
-						onSelect={handleCocktailSelect}
-					/>
-				</div>
-			{/each}
-
-			<!-- Custom Cocktail Card -->
-			<div style="animation: slideUp 0.5s ease-out {cocktails.length * 0.1}s both;">
-				<CustomCocktailCard onSelect={() => showCustomModal = true} />
+		{#if initializing}
+			<!-- Initializing State -->
+			<div class="flex flex-col items-center justify-center py-32">
+				<Loader2 class="w-20 h-20 text-cyan-600 animate-spin mb-8" />
+				<h2 class="text-4xl font-bold text-gray-800 mb-4">Connecting to Robot...</h2>
+				<p class="text-2xl text-gray-600">Checking robot status</p>
 			</div>
-		</div>
+		{:else}
+			<!-- Menu -->
+			<div class="mb-12 text-center">
+				<h2 class="text-5xl md:text-6xl font-bold text-gray-800 mb-6">Select Your Drink</h2>
+				<p class="text-2xl md:text-3xl text-gray-600">Choose from our premium automated cocktail selection</p>
+				<div class="mt-6 h-1.5 w-32 mx-auto krka-accent-gradient rounded-full"></div>
+			</div>
+
+			<div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto" style="animation: fadeIn 0.8s ease-out;">
+				<!-- Regular Cocktails -->
+				{#each cocktails as cocktail, index}
+					<div style="animation: slideUp 0.5s ease-out {index * 0.1}s both;">
+						<CocktailCard
+							{cocktail}
+							onSelect={handleCocktailSelect}
+						/>
+					</div>
+				{/each}
+
+				<!-- Custom Cocktail Card -->
+				<div style="animation: slideUp 0.5s ease-out {cocktails.length * 0.1}s both;">
+					<CustomCocktailCard onSelect={() => showCustomModal = true} />
+				</div>
+			</div>
+		{/if}
 	</section>
 </div>
 

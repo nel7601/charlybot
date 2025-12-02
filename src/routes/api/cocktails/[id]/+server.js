@@ -5,6 +5,16 @@ import { getCocktailById } from '$lib/data/cocktails.js';
 const MONITORING_ADDRESS = 91; // Address to monitor for completion signal
 const POLL_INTERVAL_MS = 2000; // Check every 2 seconds (increased to reduce concurrent operations)
 const MAX_MONITORING_TIME_MS = 120000; // Stop monitoring after 2 minutes (safety timeout)
+const MODBUS_WRITE_DELAY_MS = 50; // Delay between Modbus write operations (good practice)
+
+/**
+ * Helper function to add delay between Modbus operations
+ * Prevents saturating the Modbus server
+ * @param {number} ms - Milliseconds to wait
+ */
+function delay(ms) {
+	return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 /**
  * Monitor address 91 and reset ALL cocktail triggers (100-106) when it becomes 1
@@ -28,9 +38,10 @@ function monitorAddressAndReset(client, cocktailAddress, cocktailName) {
 			// Check if maximum monitoring time exceeded
 			if (Date.now() - startTime > MAX_MONITORING_TIME_MS) {
 				clearInterval(intervalId);
-				console.warn(`[Modbus] Monitoring timeout for ${cocktailName}. Resetting all cocktail addresses.`);
+				console.warn(`[Modbus] Monitoring timeout for ${cocktailName}. Resetting all addresses.`);
 				isResetting = true;
 				await resetAllCocktailAddresses(client);
+				await resetAllIngredientAddresses(client);
 				return;
 			}
 
@@ -51,12 +62,18 @@ function monitorAddressAndReset(client, cocktailAddress, cocktailName) {
 				}
 			}
 
-			// If address 91 is 1 (true), reset ALL cocktail triggers (100-107)
+			// If address 91 is 1 (true), reset ALL cocktail triggers (100-107) AND ingredients (132-143)
 			if (signalValue === true) {
 				clearInterval(intervalId);
 				isResetting = true;
-				console.log(`[Modbus] ✓ Address ${MONITORING_ADDRESS} activated! Resetting all cocktail addresses (100-107)...`);
+				console.log(`[Modbus] ✓ Address ${MONITORING_ADDRESS} activated! Drink ready - Resetting all addresses...`);
+
+				// Reset cocktail addresses (100-107)
 				await resetAllCocktailAddresses(client);
+
+				// Reset ingredient addresses (132-143)
+				await resetAllIngredientAddresses(client);
+
 				console.log(`[Modbus] ✓ Reset complete for ${cocktailName}`);
 			}
 		} catch (err) {
@@ -88,12 +105,36 @@ async function resetAllCocktailAddresses(client) {
 		try {
 			await client.writeCoil(address, false);
 			console.log(`[Modbus]   ✓ Address ${address} = 0`);
+			await delay(MODBUS_WRITE_DELAY_MS); // Prevent saturating Modbus server
 		} catch (err) {
 			console.error(`[Modbus]   ✗ Failed to reset address ${address}:`, err.message);
 		}
 	}
 
 	console.log(`[Modbus] ✓ All cocktail addresses reset complete`);
+}
+
+/**
+ * Reset ALL ingredient addresses (132-143) to 0
+ * Called when drink is ready (address 91 = 1)
+ * @param {import('modbus-serial')} client
+ */
+async function resetAllIngredientAddresses(client) {
+	const INGREDIENT_ADDRESSES = [132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143];
+
+	console.log(`[Modbus] Resetting all ingredient addresses (132-143)...`);
+
+	for (const address of INGREDIENT_ADDRESSES) {
+		try {
+			await client.writeCoil(address, false);
+			console.log(`[Modbus]   ✓ Ingredient address ${address} = 0`);
+			await delay(MODBUS_WRITE_DELAY_MS); // Prevent saturating Modbus server
+		} catch (err) {
+			console.error(`[Modbus]   ✗ Failed to reset ingredient address ${address}:`, err.message);
+		}
+	}
+
+	console.log(`[Modbus] ✓ All ingredient addresses reset complete`);
 }
 
 /**
@@ -148,23 +189,34 @@ export async function POST({ params }) {
 		const client = await getModbusClient();
 
 		// Check if robot is ready (address 92)
-		// Try reading as a discrete input (status bit) instead of holding register
+		// Address 92 = 1 (waitingRecipe = true) means robot is READY to receive orders
+		// Address 92 = 0 (waitingRecipe = false) means robot is BUSY
 		try {
 			const readyCheck = await client.readDiscreteInputs(92, 1);
-			console.log('[Modbus] Robot ready check:', readyCheck.data[0]);
-			if (readyCheck.data[0] === true) {
-				throw error(503, 'Robot is not ready. Please wait for current operation to complete.');
+			const waitingRecipe = readyCheck.data[0];
+			console.log(`[Modbus] Robot status check - Address 92 (waitingRecipe) = ${waitingRecipe ? 1 : 0}`);
+
+			if (waitingRecipe === false) {
+				// Robot is busy (92 = 0)
+				throw error(503, 'Robot is busy preparing another drink. Please wait.');
 			}
+			// Robot is ready (92 = 1), continue with order
+			console.log('[Modbus] ✓ Robot ready to receive order');
 		} catch (readError) {
 			// If discrete inputs don't work, try coils
 			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
 				console.log('[Modbus] Discrete input not available, trying coil...');
 				try {
 					const readyCheck = await client.readCoils(92, 1);
-					console.log('[Modbus] Robot ready check (coil):', readyCheck.data[0]);
-					if (readyCheck.data[0] === true) {
-						throw error(503, 'Robot is not ready. Please wait for current operation to complete.');
+					const waitingRecipe = readyCheck.data[0];
+					console.log(`[Modbus] Robot status check (coil) - Address 92 = ${waitingRecipe ? 1 : 0}`);
+
+					if (waitingRecipe === false) {
+						// Robot is busy (92 = 0)
+						throw error(503, 'Robot is busy preparing another drink. Please wait.');
 					}
+					// Robot is ready (92 = 1), continue with order
+					console.log('[Modbus] ✓ Robot ready to receive order');
 				} catch (coilError) {
 					// If both fail, log warning but continue (robot status check optional)
 					console.warn('[Modbus] Could not read robot status at address 92:', coilError.message);
@@ -179,11 +231,13 @@ export async function POST({ params }) {
 		for (const ingredientAddress of recipe.ingredients) {
 			await client.writeCoil(ingredientAddress, true);
 			console.log(`[Modbus]   ✓ Ingredient address ${ingredientAddress} = 1`);
+			await delay(MODBUS_WRITE_DELAY_MS); // Prevent saturating Modbus server
 		}
 
 		// Write to the cocktail address
 		console.log(`[Modbus] Triggering cocktail at address ${recipe.address}`);
 		await client.writeCoil(recipe.address, true);
+		await delay(MODBUS_WRITE_DELAY_MS);
 
 		// Write to start address (96) to tell robot to begin
 		await client.writeCoil(96, true);
