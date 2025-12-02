@@ -32,14 +32,14 @@
 
 {#if mounted}
 <button
-	class="btn btn-circle btn-ghost text-white hover:bg-white/10"
+	class="btn btn-circle btn-lg text-gray-700 hover:bg-cyan-100 border-2 border-gray-300 active:scale-95 transition-transform"
 	onclick={toggleTheme}
 	aria-label="Toggle theme"
 >
 	{#if isDark}
-		<Sun class="w-5 h-5" />
+		<Sun class="w-7 h-7" />
 	{:else}
-		<Moon class="w-5 h-5" />
+		<Moon class="w-7 h-7" />
 	{/if}
 </button>
 {/if}

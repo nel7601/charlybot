@@ -5,7 +5,8 @@
       "mcp__context7__get-library-docs",
       "Bash(pnpm list:*)",
       "WebSearch",
-      "Bash(node scripts/test-modbus-support.js:*)"
+      "Bash(node scripts/test-modbus-support.js:*)",
+      "Bash(pnpm dev:*)"
     ],
     "deny": [],
     "ask": []

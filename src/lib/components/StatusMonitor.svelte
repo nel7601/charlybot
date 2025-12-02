@@ -54,17 +54,17 @@
 
 {#if showModal}
 <dialog class="modal modal-open" style="animation: fadeIn 0.3s ease-out;">
-	<div class="modal-box max-w-xl w-full glass-morphism border-2 border-white/20" style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+	<div class="modal-box max-w-3xl w-full bg-white border-4 border-cyan-200 shadow-2xl" style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
 		<!-- Compact Header -->
-		<div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
-			<div class="flex items-center gap-3">
+		<div class="flex flex-col gap-4 mb-8 pb-6 border-b-2 border-gray-200">
+			<div class="flex items-center gap-4">
 				{#if $cocktailStatus.robotState.drinkReady}
-					<GlassWater class="w-8 h-8 text-purple-400" />
+					<GlassWater class="w-12 h-12 text-cyan-600" />
 				{:else}
-					<Bot class="w-8 h-8 text-purple-400 animate-pulse" />
+					<Bot class="w-12 h-12 text-cyan-600 animate-pulse" />
 				{/if}
-				<div>
-					<h3 class="font-bold text-2xl gradient-text">
+				<div class="flex-1">
+					<h3 class="font-bold text-3xl md:text-4xl gradient-text">
 						{#if $cocktailStatus.robotState.drinkReady}
 							Cocktail Ready!
 						{:else}
@@ -72,7 +72,7 @@
 						{/if}
 					</h3>
 					{#if !$cocktailStatus.robotState.drinkReady}
-						<p class="text-sm opacity-60">Please wait while Charly crafts your drink...</p>
+						<p class="text-lg md:text-xl text-gray-600 mt-1">Please wait while Charly crafts your drink...</p>
 					{/if}
 				</div>
 			</div>
@@ -81,37 +81,37 @@
 
 		<!-- Cocktail Steps in Grid -->
 		{#if getCurrentCocktail()}
-			<div class="grid grid-cols-1 gap-3">
+			<div class="grid grid-cols-1 gap-4">
 				{#each getCurrentCocktail().steps as step, index}
 					{@const isActive = isStepActive(step.stateKey)}
 					{@const isCurrent = isCurrentStep(index)}
 					<div
-						class="flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 {
+						class="flex items-center gap-5 p-5 rounded-xl border-2 transition-all duration-300 {
 							isActive
-								? 'bg-green-500/10 border-green-500/30'
+								? 'bg-green-50 border-green-400'
 								: isCurrent
-									? 'bg-purple-500/10 border-purple-500/30'
-									: 'bg-white/5 border-white/10 opacity-50'
+									? 'bg-cyan-50 border-cyan-400'
+									: 'bg-gray-50 border-gray-200 opacity-50'
 						}"
 						style="animation: slideUp 0.5s ease-out {index * 0.05}s both;"
 					>
 						<!-- Icon -->
 						<div class="shrink-0">
 							{#if isActive}
-								<CheckCircle class="w-5 h-5 text-green-400" />
+								<CheckCircle class="w-8 h-8 text-green-600" />
 							{:else if isCurrent}
-								<Loader2 class="w-5 h-5 text-purple-400 animate-spin" />
+								<Loader2 class="w-8 h-8 text-cyan-600 animate-spin" />
 							{:else}
-								<Circle class="w-5 h-5 text-white/30" />
+								<Circle class="w-8 h-8 text-gray-300" />
 							{/if}
 						</div>
 
 						<!-- Content -->
 						<div class="flex-1 min-w-0">
-							<div class="font-semibold text-sm text-white truncate">
+							<div class="font-semibold text-xl md:text-2xl text-gray-800 truncate">
 								{step.label}
 							</div>
-							<div class="text-xs {isActive ? 'text-green-200' : isCurrent ? 'text-purple-200' : 'text-white/40'} truncate">
+							<div class="text-base md:text-lg {isActive ? 'text-green-700' : isCurrent ? 'text-cyan-700' : 'text-gray-500'} truncate">
 								{step.description}
 							</div>
 						</div>
@@ -119,11 +119,11 @@
 						<!-- Status Icon (compact) -->
 						<div class="shrink-0">
 							{#if isActive}
-								<div class="w-2 h-2 bg-green-400 rounded-full"></div>
+								<div class="w-3 h-3 bg-green-500 rounded-full"></div>
 							{:else if isCurrent}
-								<div class="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+								<div class="w-3 h-3 bg-cyan-500 rounded-full animate-pulse"></div>
 							{:else}
-								<div class="w-2 h-2 bg-white/20 rounded-full"></div>
+								<div class="w-3 h-3 bg-gray-300 rounded-full"></div>
 							{/if}
 						</div>
 					</div>
@@ -146,19 +146,19 @@
 
 		<!-- Success Button -->
 		{#if $cocktailStatus.robotState.drinkReady}
-			<div class="modal-action justify-center mt-8">
+			<div class="modal-action justify-center mt-10">
 				<button
-					class="btn btn-lg bg-gradient-to-r from-purple-600 to-pink-600 border-0 text-white hover:from-purple-700 hover:to-pink-700"
+					class="btn btn-lg krka-accent-gradient border-0 text-white hover:shadow-xl transition-all duration-300 active:scale-95 text-xl md:text-2xl px-10 py-6 h-auto"
 					onclick={() => showModal = false}
 					style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;"
 				>
-					<CheckCircle class="w-6 h-6" />
+					<CheckCircle class="w-8 h-8" />
 					Collect Your Drink
 				</button>
 			</div>
 		{/if}
 	</div>
-	<form method="dialog" class="modal-backdrop bg-black/60 backdrop-blur-sm">
+	<form method="dialog" class="modal-backdrop bg-gray-900/50 backdrop-blur-sm">
 		<button>close</button>
 	</form>
 </dialog>

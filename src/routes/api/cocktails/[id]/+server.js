@@ -96,6 +96,36 @@ async function resetAllCocktailAddresses(client) {
 	console.log(`[Modbus] ✓ All cocktail addresses reset complete`);
 }
 
+/**
+ * Map cocktail IDs to their ingredient addresses
+ */
+const COCKTAIL_RECIPES = {
+	'mojito': {
+		address: 100,
+		ingredients: [132, 133, 135, 136, 134, 137, 140, 142, 143] // mint, muddling, syrup, lime, ice, white-rum, soda, stirring, straw
+	},
+	'cuba-libre': {
+		address: 101,
+		ingredients: [134, 137, 136, 141, 142, 143] // ice, white-rum, lime, coke, stirring, straw
+	},
+	'cubata': {
+		address: 102,
+		ingredients: [134, 138, 141, 142, 143] // ice, dark-rum, coke, stirring, straw
+	},
+	'whiskey-rocks': {
+		address: 103,
+		ingredients: [134, 139] // ice, whiskey
+	},
+	'whiskey-coke': {
+		address: 104,
+		ingredients: [134, 139, 141, 142, 143] // ice, whiskey, coke, stirring, straw
+	},
+	'whiskey-highball': {
+		address: 105,
+		ingredients: [134, 139, 140, 142, 143] // ice, whiskey, soda, stirring, straw
+	}
+};
+
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ params }) {
 	const cocktailId = params.id;
@@ -103,6 +133,11 @@ export async function POST({ params }) {
 
 	if (!cocktail) {
 		throw error(404, `Cocktail ${cocktailId} not found`);
+	}
+
+	const recipe = COCKTAIL_RECIPES[cocktailId];
+	if (!recipe) {
+		throw error(404, `Recipe not found for cocktail ${cocktailId}`);
 	}
 
 	try {
@@ -135,20 +170,30 @@ export async function POST({ params }) {
 			}
 		}
 
-		// Trigger the cocktail using coils instead of holding registers
-		// Coils are typically used for ON/OFF actions in industrial automation
-		console.log(`[Modbus] Triggering cocktail at coil address ${cocktail.modbusAddress}`);
+		// Write to all ingredient addresses for this cocktail
+		console.log(`[Modbus] Writing ingredients for ${cocktail.name}`);
+		for (const ingredientAddress of recipe.ingredients) {
+			await client.writeCoil(ingredientAddress, true);
+			console.log(`[Modbus]   ✓ Ingredient address ${ingredientAddress} = 1`);
+		}
 
-		await client.writeCoil(cocktail.modbusAddress, true);
+		// Write to the cocktail address
+		console.log(`[Modbus] Triggering cocktail at address ${recipe.address}`);
+		await client.writeCoil(recipe.address, true);
+
+		// Write to start address (96) to tell robot to begin
+		await client.writeCoil(96, true);
+		console.log(`[Modbus] Activated start signal at address 96`);
 
 		// Start monitoring address 91 to reset the cocktail trigger
 		// When address 91 becomes 1, reset the cocktail address to 0
-		monitorAddressAndReset(client, cocktail.modbusAddress, cocktail.name);
+		monitorAddressAndReset(client, recipe.address, cocktail.name);
 
 		return json({
 			success: true,
 			message: `Started preparing ${cocktail.name}`,
-			cocktailId: cocktail.id
+			cocktailId: cocktail.id,
+			ingredientsWritten: recipe.ingredients.length
 		});
 
 	} catch (err) {
