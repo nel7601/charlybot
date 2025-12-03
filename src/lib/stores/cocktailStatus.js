@@ -52,11 +52,16 @@ export const cocktailStatus = writable({
 /** @type {number | null} */
 let pollingInterval = null;
 
+/** @type {boolean} */
+let resetTriggered = false;
+
 /**
  * Start polling Modbus status
  * @param {string} cocktailId
  */
 export function startStatusPolling(cocktailId) {
+	resetTriggered = false; // Reset flag for new cocktail
+
 	cocktailStatus.update(state => ({
 		...state,
 		activeCocktailId: cocktailId,
@@ -68,12 +73,15 @@ export function startStatusPolling(cocktailId) {
 		clearInterval(pollingInterval);
 	}
 
-	// Poll every 2000ms (reduced frequency to avoid overwhelming the device)
+	console.log(`[Status] Starting polling for ${cocktailId}`);
+
+	// Poll every 3000ms (reduced frequency to avoid Modbus conflicts)
 	pollingInterval = setInterval(async () => {
 		try {
+			console.log('[Status] Fetching /api/status...');
 			const response = await fetch('/api/status', {
 				// Add timeout to prevent hanging requests
-				signal: AbortSignal.timeout(4000)
+				signal: AbortSignal.timeout(6000)
 			});
 
 			if (!response.ok) {
@@ -82,17 +90,36 @@ export function startStatusPolling(cocktailId) {
 			}
 
 			const data = await response.json();
+			console.log(`[Status] Received - drinkReady: ${data.robotState.drinkReady ? 1 : 0}, waitingRecipe: ${data.robotState.waitingRecipe ? 1 : 0}`);
+			console.log('[Status] Full robot state:', data.robotState);
 
-			cocktailStatus.update(state => ({
-				...state,
-				robotState: data.robotState,
-				isConnected: data.isConnected,
-				progress: calculateProgress(data.robotState),
-				error: null // Clear error on success
-			}));
+			cocktailStatus.update(state => {
+				console.log('[Status] Updating store with new state');
+				return {
+					...state,
+					robotState: data.robotState,
+					isConnected: data.isConnected,
+					progress: calculateProgress(data.robotState),
+					error: null // Clear error on success
+				};
+			});
 
-			// Stop polling when drink is ready
-			if (data.robotState.drinkReady) {
+			// When drink is ready (91 = 1), trigger reset ONCE
+			if (data.robotState.drinkReady && !resetTriggered) {
+				console.log('[Status] Drink ready detected (91 = 1), triggering reset...');
+				resetTriggered = true; // Prevent multiple calls
+				try {
+					await fetch('/api/reset-addresses', { method: 'POST' });
+					console.log('[Status] Reset triggered successfully');
+				} catch (resetError) {
+					console.error('[Status] Failed to trigger reset:', resetError);
+				}
+			}
+
+			// Stop polling when robot returns to ready state (92 = 1)
+			// Only check this AFTER reset has been triggered
+			if (resetTriggered && data.robotState.waitingRecipe) {
+				console.log('[Status] Robot ready (92 = 1), stopping polling and closing popup');
 				stopStatusPolling();
 			}
 		} catch (error) {
@@ -103,17 +130,27 @@ export function startStatusPolling(cocktailId) {
 				isConnected: false
 			}));
 		}
-	}, 2000);
+	}, 3000);
 }
 
 /**
- * Stop polling
+ * Stop polling and reset active cocktail
  */
 export function stopStatusPolling() {
+	console.log('[Status] Stopping polling');
 	if (pollingInterval) {
 		clearInterval(pollingInterval);
 		pollingInterval = null;
 	}
+
+	// Reset flag for next cocktail
+	resetTriggered = false;
+
+	// Clear active cocktail ID to fully reset state
+	cocktailStatus.update(state => ({
+		...state,
+		activeCocktailId: null
+	}));
 }
 
 /**

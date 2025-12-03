@@ -28,19 +28,9 @@ export async function GET() {
 		const client = await getModbusClient();
 
 		// Read address 92 (waitingRecipe / robot ready)
-		let waitingRecipe = false;
-		try {
-			const result = await client.readDiscreteInputs(92, 1);
-			waitingRecipe = result.data[0] === true;
-		} catch (readError) {
-			// If discrete inputs fail, try coils
-			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				const result = await client.readCoils(92, 1);
-				waitingRecipe = result.data[0] === true;
-			} else {
-				throw readError;
-			}
-		}
+		// All variables are COILS in RobotStudio
+		const result = await client.readCoils(92, 1);
+		const waitingRecipe = result.data[0] === true;
 
 		console.log(`[Initial State] Address 92 (waitingRecipe) = ${waitingRecipe ? 1 : 0}`);
 
@@ -62,17 +52,8 @@ export async function GET() {
 		console.log('[Initial State] Robot busy - Detecting active cocktail (reading 100-107)...');
 
 		// Read cocktail addresses 100-107 (8 addresses) in one batch
-		let cocktailStates;
-		try {
-			cocktailStates = await client.readDiscreteInputs(100, 8);
-		} catch (readError) {
-			// If discrete inputs fail, try coils
-			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				cocktailStates = await client.readCoils(100, 8);
-			} else {
-				throw readError;
-			}
-		}
+		// All variables are COILS in RobotStudio
+		const cocktailStates = await client.readCoils(100, 8);
 
 		// Find which cocktail is active (value = 1)
 		const activeCocktailAddress = cocktailStates.data.findIndex(value => value === true);

@@ -2,9 +2,6 @@ import { json, error } from '@sveltejs/kit';
 import { getModbusClient } from '$lib/services/modbusClient.js';
 import { getCocktailById } from '$lib/data/cocktails.js';
 
-const MONITORING_ADDRESS = 91; // Address to monitor for completion signal
-const POLL_INTERVAL_MS = 2000; // Check every 2 seconds (increased to reduce concurrent operations)
-const MAX_MONITORING_TIME_MS = 120000; // Stop monitoring after 2 minutes (safety timeout)
 const MODBUS_WRITE_DELAY_MS = 50; // Delay between Modbus write operations (good practice)
 
 /**
@@ -14,127 +11,6 @@ const MODBUS_WRITE_DELAY_MS = 50; // Delay between Modbus write operations (good
  */
 function delay(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-/**
- * Monitor address 91 and reset ALL cocktail triggers (100-106) when it becomes 1
- * @param {import('modbus-serial')} client
- * @param {number} cocktailAddress - The address that was triggered
- * @param {string} cocktailName
- */
-function monitorAddressAndReset(client, cocktailAddress, cocktailName) {
-	const startTime = Date.now();
-	let intervalId;
-	let isResetting = false; // Prevent multiple concurrent resets
-
-	const checkAddress = async () => {
-		// Skip if already resetting
-		if (isResetting) {
-			console.log(`[Modbus] Reset in progress, skipping check...`);
-			return;
-		}
-
-		try {
-			// Check if maximum monitoring time exceeded
-			if (Date.now() - startTime > MAX_MONITORING_TIME_MS) {
-				clearInterval(intervalId);
-				console.warn(`[Modbus] Monitoring timeout for ${cocktailName}. Resetting all addresses.`);
-				isResetting = true;
-				await resetAllCocktailAddresses(client);
-				await resetAllIngredientAddresses(client);
-				return;
-			}
-
-			// Try to read address 91 as discrete input first
-			let signalValue = false;
-			try {
-				const result = await client.readDiscreteInputs(MONITORING_ADDRESS, 1);
-				signalValue = result.data[0];
-				console.log(`[Modbus] Monitor check - Address ${MONITORING_ADDRESS} = ${signalValue ? 1 : 0}`);
-			} catch (readError) {
-				// If discrete input fails, try reading as coil
-				if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-					const result = await client.readCoils(MONITORING_ADDRESS, 1);
-					signalValue = result.data[0];
-					console.log(`[Modbus] Monitor check (coil) - Address ${MONITORING_ADDRESS} = ${signalValue ? 1 : 0}`);
-				} else {
-					throw readError;
-				}
-			}
-
-			// If address 91 is 1 (true), reset ALL cocktail triggers (100-107) AND ingredients (132-143)
-			if (signalValue === true) {
-				clearInterval(intervalId);
-				isResetting = true;
-				console.log(`[Modbus] ✓ Address ${MONITORING_ADDRESS} activated! Drink ready - Resetting all addresses...`);
-
-				// Reset cocktail addresses (100-107)
-				await resetAllCocktailAddresses(client);
-
-				// Reset ingredient addresses (132-143)
-				await resetAllIngredientAddresses(client);
-
-				console.log(`[Modbus] ✓ Reset complete for ${cocktailName}`);
-			}
-		} catch (err) {
-			// Only log, don't try to reset on monitoring errors
-			console.error(`[Modbus] ✗ Error monitoring address ${MONITORING_ADDRESS}:`, err.message);
-			// Don't clear interval or try to reset - just skip this check and try again
-		}
-	};
-
-	// Start polling
-	console.log(`[Modbus] Started monitoring address ${MONITORING_ADDRESS} for ${cocktailName} completion`);
-	intervalId = setInterval(checkAddress, POLL_INTERVAL_MS);
-
-	// Perform first check after a small delay to let the cocktail start
-	setTimeout(checkAddress, 1000);
-}
-
-/**
- * Reset ALL cocktail addresses (100-107) to 0
- * This ensures only one cocktail can be active at a time
- * @param {import('modbus-serial')} client
- */
-async function resetAllCocktailAddresses(client) {
-	const COCKTAIL_ADDRESSES = [100, 101, 102, 103, 104, 105, 106, 107];
-
-	console.log(`[Modbus] Resetting all cocktail addresses (100-107)...`);
-
-	for (const address of COCKTAIL_ADDRESSES) {
-		try {
-			await client.writeCoil(address, false);
-			console.log(`[Modbus]   ✓ Address ${address} = 0`);
-			await delay(MODBUS_WRITE_DELAY_MS); // Prevent saturating Modbus server
-		} catch (err) {
-			console.error(`[Modbus]   ✗ Failed to reset address ${address}:`, err.message);
-		}
-	}
-
-	console.log(`[Modbus] ✓ All cocktail addresses reset complete`);
-}
-
-/**
- * Reset ALL ingredient addresses (132-143) to 0
- * Called when drink is ready (address 91 = 1)
- * @param {import('modbus-serial')} client
- */
-async function resetAllIngredientAddresses(client) {
-	const INGREDIENT_ADDRESSES = [132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143];
-
-	console.log(`[Modbus] Resetting all ingredient addresses (132-143)...`);
-
-	for (const address of INGREDIENT_ADDRESSES) {
-		try {
-			await client.writeCoil(address, false);
-			console.log(`[Modbus]   ✓ Ingredient address ${address} = 0`);
-			await delay(MODBUS_WRITE_DELAY_MS); // Prevent saturating Modbus server
-		} catch (err) {
-			console.error(`[Modbus]   ✗ Failed to reset ingredient address ${address}:`, err.message);
-		}
-	}
-
-	console.log(`[Modbus] ✓ All ingredient addresses reset complete`);
 }
 
 /**
@@ -191,8 +67,9 @@ export async function POST({ params }) {
 		// Check if robot is ready (address 92)
 		// Address 92 = 1 (waitingRecipe = true) means robot is READY to receive orders
 		// Address 92 = 0 (waitingRecipe = false) means robot is BUSY
+		// All variables are COILS in RobotStudio
 		try {
-			const readyCheck = await client.readDiscreteInputs(92, 1);
+			const readyCheck = await client.readCoils(92, 1);
 			const waitingRecipe = readyCheck.data[0];
 			console.log(`[Modbus] Robot status check - Address 92 (waitingRecipe) = ${waitingRecipe ? 1 : 0}`);
 
@@ -203,27 +80,12 @@ export async function POST({ params }) {
 			// Robot is ready (92 = 1), continue with order
 			console.log('[Modbus] ✓ Robot ready to receive order');
 		} catch (readError) {
-			// If discrete inputs don't work, try coils
-			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				console.log('[Modbus] Discrete input not available, trying coil...');
-				try {
-					const readyCheck = await client.readCoils(92, 1);
-					const waitingRecipe = readyCheck.data[0];
-					console.log(`[Modbus] Robot status check (coil) - Address 92 = ${waitingRecipe ? 1 : 0}`);
-
-					if (waitingRecipe === false) {
-						// Robot is busy (92 = 0)
-						throw error(503, 'Robot is busy preparing another drink. Please wait.');
-					}
-					// Robot is ready (92 = 1), continue with order
-					console.log('[Modbus] ✓ Robot ready to receive order');
-				} catch (coilError) {
-					// If both fail, log warning but continue (robot status check optional)
-					console.warn('[Modbus] Could not read robot status at address 92:', coilError.message);
-				}
-			} else {
-				throw readError;
+			// If read fails, propagate error
+			if (readError.message && readError.message.includes('Robot is busy')) {
+				throw readError; // Re-throw the 503 error
 			}
+			console.warn('[Modbus] Could not read robot status at address 92:', readError.message);
+			// Continue with order attempt even if status check fails
 		}
 
 		// Write to all ingredient addresses for this cocktail
@@ -243,9 +105,9 @@ export async function POST({ params }) {
 		await client.writeCoil(96, true);
 		console.log(`[Modbus] Activated start signal at address 96`);
 
-		// Start monitoring address 91 to reset the cocktail trigger
-		// When address 91 becomes 1, reset the cocktail address to 0
-		monitorAddressAndReset(client, recipe.address, cocktail.name);
+		// Note: Frontend will monitor status via /api/status polling
+		// When 91 = 1 (drinkReady), frontend calls /api/reset-addresses
+		// Popup closes when 92 = 1 (waitingRecipe)
 
 		return json({
 			success: true,

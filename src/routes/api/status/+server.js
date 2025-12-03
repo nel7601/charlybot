@@ -12,17 +12,10 @@ async function readRobotState(client) {
 
 	try {
 		// Read step states in one batch (addresses 32-41: 10 consecutive addresses)
-		let stepStates;
-		try {
-			stepStates = await client.readDiscreteInputs(32, 10);
-		} catch (readError) {
-			// If discrete inputs fail, try coils
-			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				stepStates = await client.readCoils(32, 10);
-			} else {
-				throw readError;
-			}
-		}
+		// All variables are COILS in RobotStudio
+		console.log('[Status] Reading step states (32-41) as coils...');
+		let stepStates = await client.readCoils(32, 10);
+		console.log('[Status] Step states read successfully');
 
 		// Map step states to keys (according to Modbus table)
 		state.mint = stepStates.data[0] === true;        // Address 32
@@ -35,6 +28,20 @@ async function readRobotState(client) {
 		state.whiskey = stepStates.data[7] === true;     // Address 39
 		state.soda = stepStates.data[8] === true;        // Address 40
 		state.coke = stepStates.data[9] === true;        // Address 41
+
+		// Log which steps are active
+		const activeSteps = [];
+		if (state.mint) activeSteps.push('mint(32)');
+		if (state.muddling) activeSteps.push('muddling(33)');
+		if (state.ice) activeSteps.push('ice(34)');
+		if (state.syrup) activeSteps.push('syrup(35)');
+		if (state.lime) activeSteps.push('lime(36)');
+		if (state.whiteRum) activeSteps.push('whiteRum(37)');
+		if (state.darkRum) activeSteps.push('darkRum(38)');
+		if (state.whiskey) activeSteps.push('whiskey(39)');
+		if (state.soda) activeSteps.push('soda(40)');
+		if (state.coke) activeSteps.push('coke(41)');
+		console.log(`[Status] Active steps: ${activeSteps.length > 0 ? activeSteps.join(', ') : 'none'}`);
 
 	} catch (stepError) {
 		// Silently set defaults on error to avoid spam
@@ -56,17 +63,10 @@ async function readRobotState(client) {
 
 	try {
 		// Read system states in one batch (addresses 90-92: 3 consecutive addresses)
-		let systemStates;
-		try {
-			systemStates = await client.readDiscreteInputs(90, 3);
-		} catch (readError) {
-			// If discrete inputs fail, try coils
-			if (readError.modbusCode === 2 || readError.modbusCode === 1) {
-				systemStates = await client.readCoils(90, 3);
-			} else {
-				throw readError;
-			}
-		}
+		// All variables are COILS in RobotStudio
+		console.log('[Status] Reading system states (90-92) as coils...');
+		let systemStates = await client.readCoils(90, 3);
+		console.log('[Status] System states read successfully');
 
 		// Map system states to keys
 		state.cupHolder = systemStates.data[0] === true;
@@ -87,7 +87,10 @@ async function readRobotState(client) {
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
 	try {
+		console.log('[Status] Polling robot state...');
+
 		if (!isConnected()) {
+			console.log('[Status] Not connected, returning default state');
 			return json({
 				isConnected: false,
 				robotState: getDefaultState(),
@@ -98,9 +101,11 @@ export async function GET() {
 		const client = await getModbusClient();
 
 		// Read state addresses using discrete inputs or coils (not holding registers)
-		// Step addresses: 32-40 (9 addresses)
+		// Step addresses: 32-41 (10 addresses)
 		// System addresses: 90-92 (3 addresses)
 		const robotState = await readRobotState(client);
+
+		console.log(`[Status] State read - drinkReady: ${robotState.drinkReady ? 1 : 0}, waitingRecipe: ${robotState.waitingRecipe ? 1 : 0}`);
 
 		return json({
 			isConnected: true,

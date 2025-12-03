@@ -24,14 +24,14 @@ export const cocktails = [
 		modbusAddress: 100,
 		category: 'rum',
 		steps: [
-			{ label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass' },
-			{ label: 'Muddling', stateKey: 'muddling', description: 'Muddling the mint leaves' },
-			{ label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into a glass' },
-			{ label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into a glass' },
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into a glass' },
-			{ label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into a glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass' }, // 32
+			{ label: 'Muddling', stateKey: 'muddling', description: 'Muddling the mint leaves' }, // 33
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into a glass' }, // 35
+			{ label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into a glass' }, // 36
+			{ label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into a glass' }, // 37
+			{ label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into a glass' }, // 40
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -41,11 +41,11 @@ export const cocktails = [
 		modbusAddress: 101,
 		category: 'rum',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into the glass' },
-			{ label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into a glass' },
-			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into a glass' }, // 36
+			{ label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into the glass' }, // 37
+			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' }, // 41
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -55,10 +55,10 @@ export const cocktails = [
 		modbusAddress: 102,
 		category: 'rum',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring Dark Rum', stateKey: 'darkRum', description: 'Pouring dark rum into the glass' },
-			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Pouring Dark Rum', stateKey: 'darkRum', description: 'Pouring dark rum into the glass' }, // 38
+			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' }, // 41
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -68,9 +68,9 @@ export const cocktails = [
 		modbusAddress: 103,
 		category: 'whiskey',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' }, // 39
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -80,8 +80,8 @@ export const cocktails = [
 		modbusAddress: 104,
 		category: 'whiskey',
 		steps: [
-			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' }, // 39
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -91,10 +91,10 @@ export const cocktails = [
 		modbusAddress: 105,
 		category: 'whiskey',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-			{ label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' }, // 39
+			{ label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass' }, // 40
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	},
 	{
@@ -104,10 +104,10 @@ export const cocktails = [
 		modbusAddress: 106,
 		category: 'whiskey',
 		steps: [
-			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' },
-			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' }
+			{ label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' }, // 34
+			{ label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' }, // 39
+			{ label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' }, // 41
+			{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'The process is finished' } // 91
 		]
 	}
 ];

@@ -1,21 +1,20 @@
 <script>
 	import { cocktailStatus, stopStatusPolling } from '$lib/stores/cocktailStatus.js';
 	import ProgressIndicator from './ProgressIndicator.svelte';
-	import { GlassWater, Bot, CheckCircle, XCircle, Circle, Loader2 } from '@lucide/svelte';
+	import { Bot, XCircle, Circle, Loader2, CheckCircle } from '@lucide/svelte';
 	import { getCocktailById } from '$lib/data/cocktails.js';
 
 	let showModal = $state(false);
 
 	$effect(() => {
-		if ($cocktailStatus.activeCocktailId) {
+		// Show modal when a cocktail is being prepared
+		if ($cocktailStatus.activeCocktailId && !showModal) {
 			showModal = true;
 		}
 
-		if ($cocktailStatus.robotState.drinkReady) {
-			setTimeout(() => {
-				showModal = false;
-				stopStatusPolling();
-			}, 3000);
+		// Close modal when activeCocktailId is cleared (store handles stopping polling)
+		if (showModal && !$cocktailStatus.activeCocktailId) {
+			showModal = false;
 		}
 	});
 
@@ -50,6 +49,22 @@
 		}
 		return false;
 	}
+
+	// Debug effect to log state changes
+	$effect(() => {
+		if ($cocktailStatus.activeCocktailId) {
+			console.log('[StatusMonitor] Robot state update:', JSON.stringify($cocktailStatus.robotState, null, 2));
+			const cocktail = getCurrentCocktail();
+			if (cocktail) {
+				console.log('[StatusMonitor] Step states:');
+				cocktail.steps.forEach((step, index) => {
+					const isActive = isStepActive(step.stateKey);
+					const isCurrent = isCurrentStep(index);
+					console.log(`  ${index}. ${step.label} (${step.stateKey}): active=${isActive}, current=${isCurrent}`);
+				});
+			}
+		}
+	});
 </script>
 
 {#if showModal}
@@ -58,22 +73,12 @@
 		<!-- Compact Header -->
 		<div class="flex flex-col gap-4 mb-8 pb-6 border-b-2 border-gray-200">
 			<div class="flex items-center gap-4">
-				{#if $cocktailStatus.robotState.drinkReady}
-					<GlassWater class="w-12 h-12 text-cyan-600" />
-				{:else}
-					<Bot class="w-12 h-12 text-cyan-600 animate-pulse" />
-				{/if}
+				<Bot class="w-12 h-12 text-cyan-600 animate-pulse" />
 				<div class="flex-1">
 					<h3 class="font-bold text-3xl md:text-4xl gradient-text">
-						{#if $cocktailStatus.robotState.drinkReady}
-							Cocktail Ready!
-						{:else}
-							Preparing {getCurrentCocktail()?.name || 'Your Cocktail'}
-						{/if}
+						Preparing {getCurrentCocktail()?.name || 'Your Cocktail'}
 					</h3>
-					{#if !$cocktailStatus.robotState.drinkReady}
-						<p class="text-lg md:text-xl text-gray-600 mt-1">Please wait while Charly crafts your drink...</p>
-					{/if}
+					<p class="text-lg md:text-xl text-gray-600 mt-1">Please wait while Charly crafts your drink...</p>
 				</div>
 			</div>
 			<ProgressIndicator progress={$cocktailStatus.progress} />
@@ -141,20 +146,6 @@
 						<div class="text-sm">{$cocktailStatus.error.message}</div>
 					</div>
 				</div>
-			</div>
-		{/if}
-
-		<!-- Success Button -->
-		{#if $cocktailStatus.robotState.drinkReady}
-			<div class="modal-action justify-center mt-10">
-				<button
-					class="btn btn-lg krka-accent-gradient border-0 text-white hover:shadow-xl transition-all duration-300 active:scale-95 text-xl md:text-2xl px-10 py-6 h-auto"
-					onclick={() => showModal = false}
-					style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;"
-				>
-					<CheckCircle class="w-8 h-8" />
-					Collect Your Drink
-				</button>
 			</div>
 		{/if}
 	</div>
