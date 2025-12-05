@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store';
+import { getCocktailById } from '$lib/data/cocktails.js';
 
 /**
  * @typedef {Object} RobotState
@@ -99,7 +100,7 @@ export function startStatusPolling(cocktailId) {
 					...state,
 					robotState: data.robotState,
 					isConnected: data.isConnected,
-					progress: calculateProgress(data.robotState),
+					progress: calculateProgress(data.robotState, state.activeCocktailId),
 					error: null // Clear error on success
 				};
 			});
@@ -156,31 +157,35 @@ export function stopStatusPolling() {
 /**
  * Calculate progress based on the current cocktail's steps
  * @param {RobotState} state
+ * @param {string | null} cocktailId
  * @returns {number} Progress percentage (0-100)
  */
-function calculateProgress(state) {
-	// Import cocktails to get current cocktail steps
-	// For now, count all true values in the state
-	const allSteps = [
-		state.mint,
-		state.muddling,
-		state.ice,
-		state.syrup,
-		state.lime,
-		state.whiteRum,
-		state.darkRum,
-		state.whiskey,
-		state.soda,
-		state.coke,
-		state.drinkReady
-	];
-
-	const completed = allSteps.filter(Boolean).length;
-	const total = allSteps.filter(step => step !== undefined).length;
-
+function calculateProgress(state, cocktailId) {
+	// If drink is ready, always return 100%
 	if (state.drinkReady) {
 		return 100;
 	}
 
-	return total > 0 ? Math.round((completed / total) * 100) : 0;
+	// If no active cocktail, return 0
+	if (!cocktailId) {
+		return 0;
+	}
+
+	// Get the cocktail to access its specific steps
+	const cocktail = getCocktailById(cocktailId);
+
+	if (!cocktail || !cocktail.steps || cocktail.steps.length === 0) {
+		return 0;
+	}
+
+	// Count completed steps from the cocktail's specific steps
+	const completedSteps = cocktail.steps.filter(step => {
+		// @ts-ignore - stateKey is a valid RobotState key from cocktail definition
+		return state[step.stateKey] === true;
+	}).length;
+
+	const totalSteps = cocktail.steps.length;
+
+	// Calculate percentage based on actual cocktail steps
+	return Math.round((completedSteps / totalSteps) * 100);
 }
