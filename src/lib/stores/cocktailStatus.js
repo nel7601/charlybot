@@ -21,6 +21,7 @@ import { getCocktailById } from '$lib/data/cocktails.js';
 /**
  * @typedef {Object} CocktailStatus
  * @property {string | null} activeCocktailId - Currently preparing cocktail
+ * @property {string[] | null} customIngredients - Selected ingredients for custom drinks
  * @property {RobotState} robotState - Current robot state
  * @property {boolean} isConnected - Modbus connection status
  * @property {Error | null} error - Last error
@@ -30,6 +31,7 @@ import { getCocktailById } from '$lib/data/cocktails.js';
 /** @type {import('svelte/store').Writable<CocktailStatus>} */
 export const cocktailStatus = writable({
 	activeCocktailId: null,
+	customIngredients: null,
 	robotState: {
 		mint: false,         // Address 32
 		muddling: false,     // Address 33
@@ -59,13 +61,15 @@ let resetTriggered = false;
 /**
  * Start polling Modbus status
  * @param {string} cocktailId
+ * @param {string[] | null} [customIngredients] - Selected ingredients for custom drinks
  */
-export function startStatusPolling(cocktailId) {
+export function startStatusPolling(cocktailId, customIngredients = null) {
 	resetTriggered = false; // Reset flag for new cocktail
 
 	cocktailStatus.update(state => ({
 		...state,
 		activeCocktailId: cocktailId,
+		customIngredients: customIngredients,
 		progress: 0,
 		error: null
 	}));
@@ -100,7 +104,7 @@ export function startStatusPolling(cocktailId) {
 					...state,
 					robotState: data.robotState,
 					isConnected: data.isConnected,
-					progress: calculateProgress(data.robotState, state.activeCocktailId),
+					progress: calculateProgress(data.robotState, state.activeCocktailId, state.customIngredients),
 					error: null // Clear error on success
 				};
 			});
@@ -147,10 +151,11 @@ export function stopStatusPolling() {
 	// Reset flag for next cocktail
 	resetTriggered = false;
 
-	// Clear active cocktail ID to fully reset state
+	// Clear active cocktail ID and custom ingredients to fully reset state
 	cocktailStatus.update(state => ({
 		...state,
-		activeCocktailId: null
+		activeCocktailId: null,
+		customIngredients: null
 	}));
 }
 
@@ -158,9 +163,10 @@ export function stopStatusPolling() {
  * Calculate progress based on the current cocktail's steps
  * @param {RobotState} state
  * @param {string | null} cocktailId
+ * @param {string[] | null} customIngredients
  * @returns {number} Progress percentage (0-100)
  */
-function calculateProgress(state, cocktailId) {
+function calculateProgress(state, cocktailId, customIngredients) {
 	// If drink is ready, always return 100%
 	if (state.drinkReady) {
 		return 100;
@@ -172,7 +178,7 @@ function calculateProgress(state, cocktailId) {
 	}
 
 	// Get the cocktail to access its specific steps
-	const cocktail = getCocktailById(cocktailId);
+	const cocktail = getCocktailById(cocktailId, customIngredients);
 
 	if (!cocktail || !cocktail.steps || cocktail.steps.length === 0) {
 		return 0;

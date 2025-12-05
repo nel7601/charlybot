@@ -104,8 +104,8 @@
 
 			const result = await response.json();
 
-			// Start real-time status polling with custom ID
-			startStatusPolling('custom');
+			// Start real-time status polling with custom ID and ingredients
+			startStatusPolling('custom', ingredients);
 
 		} catch (error) {
 			errorMessage = error.message;
