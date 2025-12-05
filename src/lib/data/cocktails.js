@@ -51,7 +51,7 @@ export const cocktails = [
 	{
 		id: 'cubata',
 		name: 'Cubata',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/rw8cw21582485096.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=80',
 		modbusAddress: 102,
 		category: 'rum',
 		steps: [
@@ -76,7 +76,7 @@ export const cocktails = [
 	{
 		id: 'neat-whiskey',
 		name: 'Neat Whiskey',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/5s22081504883416.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&q=80',
 		modbusAddress: 104,
 		category: 'whiskey',
 		steps: [
@@ -100,7 +100,7 @@ export const cocktails = [
 	{
 		id: 'whiskey-coke',
 		name: 'Whiskey and Coke',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/wzupxr1580737578.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1481671703460-040cb8a2d909?w=400&q=80',
 		modbusAddress: 106,
 		category: 'whiskey',
 		steps: [
