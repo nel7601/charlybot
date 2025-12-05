@@ -9,7 +9,8 @@
       "Bash(pnpm dev:*)",
       "Bash(pnpm check:*)",
       "WebFetch(domain:www.thecocktaildb.com)",
-      "WebFetch(domain:unsplash.com)"
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:ultimate.watch)"
     ],
     "deny": [],
     "ask": []

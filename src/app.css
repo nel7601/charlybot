@@ -10,12 +10,22 @@
   --font-family-display: "Bebas Neue", sans-serif;
   --font-family-body: "Inter", sans-serif;
 
-  /* KRKA Brand Colors */
+  /* KRKA Brand Colors - Light Theme */
   --color-krka-cyan: #00B4D8;
   --color-krka-teal: #0A9396;
   --color-krka-light-cyan: #90E0EF;
   --color-krka-dark-teal: #005F73;
   --color-krka-accent: #0DCAF0;
+}
+
+/* Dark Theme Variables */
+.dark {
+  /* KRKA Brand Colors - Desaturated for Dark Theme */
+  --color-krka-cyan: #48C9E0;
+  --color-krka-teal: #3CAFA8;
+  --color-krka-light-cyan: #80D8E8;
+  --color-krka-dark-teal: #2A7A7F;
+  --color-krka-accent: #4DD4F1;
 }
 
 @keyframes pour {
@@ -131,4 +141,214 @@ h1, h2, h3, h4, h5, h6 {
 
 .krka-accent-gradient {
   background: linear-gradient(135deg, var(--color-krka-cyan) 0%, var(--color-krka-teal) 100%);
+}
+
+/* ===== DARK THEME STYLES ===== */
+.dark {
+  /* Background colors */
+  background-color: #0a0e17;
+  color: #e4e6eb;
+}
+
+.dark body {
+  background-color: #0a0e17;
+  color: #e4e6eb;
+}
+
+/* Background gradients for dark theme */
+.dark .bg-gradient-to-br {
+  background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
+}
+
+.dark .from-cyan-50 {
+  --tw-gradient-from: #0f1419;
+}
+
+.dark .via-teal-50 {
+  --tw-gradient-via: #131821;
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: #1a1f2e;
+}
+
+/* Animated background orbs */
+.dark .bg-cyan-400\/10 {
+  background-color: rgba(72, 201, 224, 0.05);
+}
+
+.dark .bg-teal-400\/10 {
+  background-color: rgba(60, 175, 168, 0.05);
+}
+
+.dark .bg-blue-400\/5 {
+  background-color: rgba(77, 212, 241, 0.03);
+}
+
+/* Header styles */
+.dark header {
+  background-color: rgba(15, 20, 25, 0.9);
+  border-color: rgba(72, 201, 224, 0.2);
+}
+
+.dark .backdrop-blur-md {
+  backdrop-filter: blur(12px);
+}
+
+/* Text colors */
+.dark .text-gray-800 {
+  color: #e4e6eb;
+}
+
+.dark .text-gray-700 {
+  color: #b8bec8;
+}
+
+.dark .text-gray-600 {
+  color: #8a909a;
+}
+
+.dark .text-gray-500 {
+  color: #6c7178;
+}
+
+.dark .text-gray-300 {
+  color: #4a4f5a;
+}
+
+/* Card styles */
+.dark .bg-white {
+  background-color: #1a1f2e;
+}
+
+.dark .border-gray-200 {
+  border-color: #2a2f3e;
+}
+
+.dark .border-gray-300 {
+  border-color: #3a3f4e;
+}
+
+.dark .card-glow {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dark .card-glow:hover {
+  box-shadow: 0 8px 40px rgba(72, 201, 224, 0.2);
+}
+
+/* Gradient overlays on images */
+.dark .from-gray-900\/90 {
+  --tw-gradient-from: rgba(10, 14, 23, 0.95);
+}
+
+.dark .via-gray-800\/40 {
+  --tw-gradient-via: rgba(15, 20, 25, 0.5);
+}
+
+/* Button styles */
+.dark button.text-gray-700 {
+  color: #b8bec8;
+  border-color: #3a3f4e;
+}
+
+.dark button:hover.hover\:bg-cyan-100,
+.dark button:hover.hover\:bg-gray-100 {
+  background-color: rgba(72, 201, 224, 0.15);
+}
+
+.dark .bg-gray-200 {
+  background-color: #2a2f3e;
+}
+
+.dark .hover\:bg-gray-300:hover {
+  background-color: #3a3f4e;
+}
+
+/* Modal and dialog styles */
+.dark .modal-box {
+  background-color: #1a1f2e;
+  border-color: rgba(72, 201, 224, 0.3);
+}
+
+.dark .bg-gray-50 {
+  background-color: #242936;
+}
+
+.dark .border-cyan-200 {
+  border-color: rgba(72, 201, 224, 0.3);
+}
+
+/* Progress indicator */
+.dark .bg-gray-200 {
+  background-color: #2a2f3e;
+}
+
+/* Status colors */
+.dark .bg-green-50 {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.dark .border-green-400 {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.dark .text-green-600,
+.dark .text-green-700 {
+  color: #4ade80;
+}
+
+.dark .bg-cyan-50 {
+  background-color: rgba(72, 201, 224, 0.1);
+}
+
+.dark .border-cyan-400 {
+  border-color: rgba(72, 201, 224, 0.4);
+}
+
+.dark .text-cyan-600,
+.dark .text-cyan-700 {
+  color: #48C9E0;
+}
+
+/* Error colors */
+.dark .bg-red-50 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.dark .border-red-300,
+.dark .border-red-500\/30 {
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+.dark .text-red-900 {
+  color: #fca5a5;
+}
+
+/* Loading overlay */
+.dark .bg-white\/80 {
+  background-color: rgba(10, 14, 23, 0.9);
+}
+
+/* Border colors */
+.dark .border-b-2.border-gray-200 {
+  border-color: #2a2f3e;
+}
+
+/* Custom cocktail modal */
+.dark .bg-gray-100 {
+  background-color: #2a2f3e;
+}
+
+/* Disabled states */
+.dark button:disabled {
+  opacity: 0.5;
+}
+
+/* Gradient text remains with accent colors */
+.dark .gradient-text {
+  background: linear-gradient(135deg, var(--color-krka-cyan) 0%, var(--color-krka-teal) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

@@ -134,6 +134,7 @@ const ingredientMapping = {
 export function getCocktailById(id, customIngredients = null) {
 	// Handle custom cocktail
 	if (id === 'custom') {
+		/** @type {CocktailStep[]} */
 		const steps = [];
 
 		// Generate steps based on selected ingredients
