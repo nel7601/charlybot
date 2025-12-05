@@ -3,6 +3,7 @@
  * @property {string} label - Display name of the step
  * @property {string} stateKey - Robot state key to monitor
  * @property {string} description - Description of what happens
+ * @property {number} [modbusAddress] - Optional Modbus address for ordering custom ingredients
  */
 
 /**
