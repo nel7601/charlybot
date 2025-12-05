@@ -121,22 +121,22 @@
 	<meta name="description" content="Automated cocktail preparation system" />
 </svelte:head>
 
-<div class="min-h-screen bg-gradient-to-br from-cyan-50 via-teal-50 to-blue-50">
+<div class="min-h-screen bg-base-200">
 	<!-- Animated background -->
 	<div class="fixed inset-0 overflow-hidden pointer-events-none">
-		<div class="absolute top-0 left-1/4 w-96 h-96 bg-cyan-400/10 rounded-full blur-3xl animate-pulse"></div>
-		<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-400/10 rounded-full blur-3xl" style="animation: float 6s ease-in-out infinite;"></div>
-		<div class="absolute top-1/2 right-1/3 w-72 h-72 bg-blue-400/5 rounded-full blur-3xl" style="animation: float 8s ease-in-out infinite reverse;"></div>
+		<div class="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
+		<div class="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl" style="animation: float 6s ease-in-out infinite;"></div>
 	</div>
 
 	<!-- Header -->
-	<header class="relative backdrop-blur-md bg-white/80 border-b border-cyan-200/50 shadow-sm">
-		<div class="container mx-auto px-8 py-6">
+	<header class="relative backdrop-blur-md bg-base-300/50 border-b border-base-300">
+		<div class="container mx-auto px-6 py-4">
 			<div class="flex items-center justify-between">
-				<div class="flex items-center gap-6">
-					<img src="/image/krkalogotranspartent.png" alt="KRKA Power Inc" class="h-16 md:h-20 w-auto" />
-					<div class="h-12 md:h-14 w-px bg-gradient-to-b from-transparent via-cyan-300 to-transparent"></div>
-					<h1 class="text-4xl md:text-5xl font-bold gradient-text">Charly Bot</h1>
+				<div class="flex items-center gap-3">
+					<div class="w-12 h-12 rounded-xl bg-primary flex items-center justify-center">
+						<Bot class="w-7 h-7 text-primary-content" />
+					</div>
+					<h1 class="text-3xl font-bold text-primary">Charly Bot</h1>
 				</div>
 				<ThemeToggle />
 			</div>
@@ -145,33 +145,23 @@
 
 	<!-- Error Alert -->
 	{#if errorMessage}
-		<div class="container mx-auto px-8 mt-8" style="animation: slideUp 0.5s ease-out;">
-			<div class="alert bg-red-50 border-2 border-red-300 backdrop-blur-md shadow-lg p-6">
-				<div class="flex items-center gap-4">
-					<AlertCircle class="w-8 h-8 text-red-600" />
-					<span class="text-red-900 font-medium text-xl">{errorMessage}</span>
+		<div class="container mx-auto px-6 mt-6 " style="animation: slideUp 0.5s ease-out;">
+			<div class="alert alert-error">
+				<div class="flex items-center gap-3">
+					<AlertCircle class="w-6 h-6" />
+					<span>{errorMessage}</span>
 				</div>
-				<button class="btn btn-lg btn-ghost text-red-700 hover:bg-red-100" onclick={() => errorMessage = ''}>Close</button>
+				<button class="btn btn-sm btn-ghost" onclick={() => errorMessage = ''}>Close</button>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Cocktail Menu -->
-	<section class="relative container mx-auto px-8 py-16 max-w-7xl">
-		{#if initializing}
-			<!-- Initializing State -->
-			<div class="flex flex-col items-center justify-center py-32">
-				<Loader2 class="w-20 h-20 text-cyan-600 animate-spin mb-8" />
-				<h2 class="text-4xl font-bold text-gray-800 mb-4">Connecting to Robot...</h2>
-				<p class="text-2xl text-gray-600">Checking robot status</p>
-			</div>
-		{:else}
-			<!-- Menu -->
-			<div class="mb-12 text-center">
-				<h2 class="text-5xl md:text-6xl font-bold text-gray-800 mb-6">Select Your Drink</h2>
-				<p class="text-2xl md:text-3xl text-gray-600">Choose from our premium automated cocktail selection</p>
-				<div class="mt-6 h-1.5 w-32 mx-auto krka-accent-gradient rounded-full"></div>
-			</div>
+	<section class="relative container mx-auto px-6 py-12 max-w-5xl">
+		<div class="mb-8 text-center">
+			<h2 class="text-5xl font-bold text-base-content mb-3">Select Your Drink</h2>
+			<p class="text-lg text-base-content/70">Choose from our premium automated cocktail selection</p>
+		</div>
 
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto" style="animation: fadeIn 0.8s ease-out;">
 				<!-- Regular Cocktails -->
@@ -205,10 +195,10 @@
 
 <!-- Loading Overlay -->
 {#if loading}
-	<div class="fixed inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-50" style="animation: fadeIn 0.3s ease-out;">
-		<div class="flex flex-col items-center gap-6 bg-white p-12 rounded-3xl shadow-2xl border-2 border-cyan-200">
-			<Loader2 class="w-16 h-16 text-cyan-600 animate-spin" />
-			<p class="text-gray-800 text-2xl font-medium">Processing your order...</p>
+	<div class="fixed inset-0 bg-base-300/70 backdrop-blur-sm flex items-center justify-center z-50" style="animation: fadeIn 0.3s ease-out;">
+		<div class="flex flex-col items-center gap-4">
+			<Loader2 class="w-12 h-12 text-primary animate-spin" />
+			<p class="text-base-content text-lg font-medium">Processing your order...</p>
 		</div>
 	</div>
 {/if}

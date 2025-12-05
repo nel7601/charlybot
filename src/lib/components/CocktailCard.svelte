@@ -27,22 +27,22 @@
 			class:scale-110={isHovered}
 		/>
 		<!-- Gradient overlay -->
-		<div class="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-800/40 to-transparent opacity-70 group-hover:opacity-80 transition-opacity duration-300"></div>
+		<div class="absolute inset-0 bg-gradient-to-t from-base-300/90 via-base-300/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-300"></div>
 
 		<!-- Glow effect on hover -->
-		<div class="absolute inset-0 bg-gradient-to-t from-cyan-500/30 via-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+		<div class="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
 		<!-- Content -->
 		<div class="absolute inset-0 flex items-end p-8">
 			<div class="w-full">
-				<h2 class="text-4xl md:text-5xl font-bold text-white mb-3 transform transition-transform duration-300 group-hover:translate-y-[-4px] drop-shadow-lg">
+				<h2 class="text-3xl font-bold text-base-content mb-2 transform transition-transform duration-300 group-hover:translate-y-[-4px]">
 					{cocktail.name}
 				</h2>
-				<div class="w-20 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transform origin-left transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></div>
+				<div class="w-16 h-1 bg-primary rounded-full transform origin-left transition-transform duration-300 scale-x-0 group-hover:scale-x-100 mx-auto"></div>
 			</div>
 		</div>
 
 		<!-- Corner accent -->
-		<div class="absolute top-6 right-6 w-16 h-16 border-t-4 border-r-4 border-cyan-300 rounded-tr-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+		<div class="absolute top-4 right-4 w-12 h-12 border-t-2 border-r-2 border-primary/30 rounded-tr-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 	</figure>
 </button>

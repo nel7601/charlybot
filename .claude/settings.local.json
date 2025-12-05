@@ -6,7 +6,7 @@
       "Bash(pnpm list:*)",
       "WebSearch",
       "Bash(node scripts/test-modbus-support.js:*)",
-      "Bash(pnpm dev:*)"
+      "Bash(del tailwind.config.js)"
     ],
     "deny": [],
     "ask": []
