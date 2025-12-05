@@ -1,5 +1,5 @@
 import ModbusRTU from 'modbus-serial';
-import { env } from '$env/dynamic/private';
+import { getConfig } from '$lib/server/modbusConfig.js';
 
 /** @typedef {Object} ModbusConnectionConfig
  * @property {string} host - Modbus TCP host
@@ -15,17 +15,20 @@ let connectionPromise = null;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 3;
 
-// Configuration from environment variables with fallbacks
-const CONFIG = {
-	host: env.MODBUS_HOST || 'localhost',
-	port: parseInt(env.MODBUS_PORT || '502'),
-	unitId: parseInt(env.MODBUS_UNIT_ID || '1'),
-	timeout: parseInt(env.MODBUS_TIMEOUT || '10000'), // Increased to 10 seconds for localhost
-	reconnectInterval: 3000
-};
+/**
+ * Get current configuration (always fresh from file)
+ */
+function getModbusConfig() {
+	const config = getConfig();
+	return {
+		...config,
+		reconnectInterval: 3000
+	};
+}
 
 // Log configuration on startup (once)
-console.log(`[Modbus] Configuration: ${CONFIG.host}:${CONFIG.port} (Unit ID: ${CONFIG.unitId}, Timeout: ${CONFIG.timeout}ms)`);
+const initialConfig = getModbusConfig();
+console.log(`[Modbus] Initial Configuration: ${initialConfig.host}:${initialConfig.port} (Unit ID: ${initialConfig.unitId}, Timeout: ${initialConfig.timeout}ms)`);
 
 /**
  * Get or create Modbus client connection (singleton pattern)
@@ -70,10 +73,12 @@ export async function getModbusClient() {
  * @returns {Promise<ModbusRTU>}
  */
 async function connect() {
+	const CONFIG = getModbusConfig();
 	const newClient = new ModbusRTU();
 	newClient.setTimeout(CONFIG.timeout);
 
 	try {
+		console.log(`[Modbus] Attempting connection to ${CONFIG.host}:${CONFIG.port}...`);
 		await newClient.connectTCP(CONFIG.host, { port: CONFIG.port });
 		newClient.setID(CONFIG.unitId);
 		console.log(`[Modbus] ✓ Connected to ${CONFIG.host}:${CONFIG.port}`);
@@ -120,6 +125,20 @@ export function closeConnection() {
 		}
 		client = null;
 	}
+}
+
+/**
+ * Force reconnection with new configuration
+ * Closes current connection and clears cached client
+ */
+export function forceReconnect() {
+	console.log('[Modbus] Forcing reconnection with new configuration...');
+	closeConnection();
+	isConnecting = false;
+	connectionPromise = null;
+	reconnectAttempts = 0;
+	const newConfig = getModbusConfig();
+	console.log(`[Modbus] New configuration loaded: ${newConfig.host}:${newConfig.port} (Unit ID: ${newConfig.unitId})`);
 }
 
 /**

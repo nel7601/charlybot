@@ -21,7 +21,7 @@
 	/** @returns {import('$lib/data/cocktails.js').Cocktail | undefined} */
 	function getCurrentCocktail() {
 		if (!$cocktailStatus.activeCocktailId) return undefined;
-		return getCocktailById($cocktailStatus.activeCocktailId);
+		return getCocktailById($cocktailStatus.activeCocktailId, $cocktailStatus.customIngredients);
 	}
 
 	/**

@@ -3,6 +3,7 @@
  * @property {string} label - Display name of the step
  * @property {string} stateKey - Robot state key to monitor
  * @property {string} description - Description of what happens
+ * @property {number} [modbusAddress] - Optional Modbus address for ordering custom ingredients
  */
 
 /**
@@ -51,7 +52,7 @@ export const cocktails = [
 	{
 		id: 'cubata',
 		name: 'Cubata',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/rw8cw21582485096.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&q=80',
 		modbusAddress: 102,
 		category: 'rum',
 		steps: [
@@ -76,7 +77,7 @@ export const cocktails = [
 	{
 		id: 'neat-whiskey',
 		name: 'Neat Whiskey',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/5s22081504883416.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1569529465841-dfecdab7503b?w=400&q=80',
 		modbusAddress: 104,
 		category: 'whiskey',
 		steps: [
@@ -100,7 +101,7 @@ export const cocktails = [
 	{
 		id: 'whiskey-coke',
 		name: 'Whiskey and Coke',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/wzupxr1580737578.jpg',
+		imageUrl: 'https://images.unsplash.com/photo-1481671703460-040cb8a2d909?w=400&q=80',
 		modbusAddress: 106,
 		category: 'whiskey',
 		steps: [
@@ -112,24 +113,55 @@ export const cocktails = [
 	}
 ];
 
+// Map ingredient IDs to their configuration with modbus addresses for ordering
+const ingredientMapping = {
+	'mint': { label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass', modbusAddress: 32 },
+	'ice': { label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass', modbusAddress: 34 },
+	'syrup': { label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into the glass', modbusAddress: 35 },
+	'lime': { label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into the glass', modbusAddress: 36 },
+	'white-rum': { label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into the glass', modbusAddress: 37 },
+	'dark-rum': { label: 'Pouring Dark Rum', stateKey: 'darkRum', description: 'Pouring dark rum into the glass', modbusAddress: 38 },
+	'whiskey': { label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass', modbusAddress: 39 },
+	'soda': { label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass', modbusAddress: 40 },
+	'coke': { label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass', modbusAddress: 41 }
+};
+
 /**
  * Get cocktail by ID
  * @param {string} id
+ * @param {string[] | null} [customIngredients] - Selected ingredients for custom drinks
  * @returns {Cocktail | undefined}
  */
-export function getCocktailById(id) {
+export function getCocktailById(id, customIngredients = null) {
 	// Handle custom cocktail
 	if (id === 'custom') {
+		/** @type {CocktailStep[]} */
+		const steps = [];
+
+		// Generate steps based on selected ingredients
+		if (customIngredients && customIngredients.length > 0) {
+			customIngredients.forEach(ingredientId => {
+				// @ts-ignore - ingredientId is a valid key from CustomCocktailModal
+				const ingredient = ingredientMapping[ingredientId];
+				if (ingredient) {
+					steps.push(ingredient);
+				}
+			});
+
+			// Sort steps by modbus address to show them in the correct execution order
+			steps.sort((a, b) => a.modbusAddress - b.modbusAddress);
+		}
+
+		// Always add "Drink Ready" as the final step
+		steps.push({ label: 'Drink Ready', stateKey: 'drinkReady', description: 'Your custom drink is ready!' });
+
 		return {
 			id: 'custom',
 			name: 'Custom Drink',
 			imageUrl: '',
 			modbusAddress: 107,
 			category: 'custom',
-			steps: [
-				{ label: 'Preparing', stateKey: 'preparing', description: 'Preparing your custom drink' },
-				{ label: 'Drink Ready', stateKey: 'drinkReady', description: 'Your custom drink is ready!' }
-			]
+			steps: steps
 		};
 	}
 	return cocktails.find(c => c.id === id);

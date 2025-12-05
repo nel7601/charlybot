@@ -6,7 +6,17 @@
       "Bash(pnpm list:*)",
       "WebSearch",
       "Bash(node scripts/test-modbus-support.js:*)",
+
       "Bash(del tailwind.config.js)"
+
+      "Bash(pnpm dev:*)",
+      "Bash(pnpm check:*)",
+      "WebFetch(domain:www.thecocktaildb.com)",
+      "WebFetch(domain:unsplash.com)",
+      "WebFetch(domain:ultimate.watch)",
+      "Bash(pnpm dev:check:*)",
+      "Bash(cat:*)"
+
     ],
     "deny": [],
     "ask": []

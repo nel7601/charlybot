@@ -7,7 +7,8 @@
 	import CustomCocktailModal from '$lib/components/CustomCocktailModal.svelte';
 	import StatusMonitor from '$lib/components/StatusMonitor.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
-	import { Bot, AlertCircle, Loader2 } from '@lucide/svelte';
+	import { Bot, AlertCircle, Loader2, Settings } from '@lucide/svelte';
+	import { goto } from '$app/navigation';
 
 	let loading = $state(false);
 	let errorMessage = $state('');
@@ -104,8 +105,8 @@
 
 			const result = await response.json();
 
-			// Start real-time status polling with custom ID
-			startStatusPolling('custom');
+			// Start real-time status polling with custom ID and ingredients
+			startStatusPolling('custom', ingredients);
 
 		} catch (error) {
 			errorMessage = error.message;
@@ -138,7 +139,16 @@
 					</div>
 					<h1 class="text-3xl font-bold text-primary">Charly Bot</h1>
 				</div>
-				<ThemeToggle />
+				<div class="flex items-center gap-4">
+					<button
+						class="btn btn-circle btn-lg text-gray-700 hover:bg-cyan-100 border-2 border-gray-300 active:scale-95 transition-transform"
+						onclick={() => goto('/settings')}
+						aria-label="Settings"
+					>
+						<Settings class="w-7 h-7" />
+					</button>
+					<ThemeToggle />
+				</div>
 			</div>
 		</div>
 	</header>
