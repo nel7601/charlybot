@@ -112,17 +112,17 @@ export const cocktails = [
 	}
 ];
 
-// Map ingredient IDs to their configuration
+// Map ingredient IDs to their configuration with modbus addresses for ordering
 const ingredientMapping = {
-	'mint': { label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass' },
-	'ice': { label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass' },
-	'syrup': { label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into the glass' },
-	'lime': { label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into the glass' },
-	'white-rum': { label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into the glass' },
-	'dark-rum': { label: 'Pouring Dark Rum', stateKey: 'darkRum', description: 'Pouring dark rum into the glass' },
-	'whiskey': { label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass' },
-	'soda': { label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass' },
-	'coke': { label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass' }
+	'mint': { label: 'Placing Mint', stateKey: 'mint', description: 'Placing mint leaves in the glass', modbusAddress: 32 },
+	'ice': { label: 'Adding Ice', stateKey: 'ice', description: 'Adding ice cubes to the glass', modbusAddress: 34 },
+	'syrup': { label: 'Pouring Syrup', stateKey: 'syrup', description: 'Pouring syrup into the glass', modbusAddress: 35 },
+	'lime': { label: 'Adding Lime', stateKey: 'lime', description: 'Pouring lime into the glass', modbusAddress: 36 },
+	'white-rum': { label: 'Pouring White Rum', stateKey: 'whiteRum', description: 'Pouring white rum into the glass', modbusAddress: 37 },
+	'dark-rum': { label: 'Pouring Dark Rum', stateKey: 'darkRum', description: 'Pouring dark rum into the glass', modbusAddress: 38 },
+	'whiskey': { label: 'Pouring Whiskey', stateKey: 'whiskey', description: 'Pouring whiskey into the glass', modbusAddress: 39 },
+	'soda': { label: 'Adding Soda', stateKey: 'soda', description: 'Pouring soda into the glass', modbusAddress: 40 },
+	'coke': { label: 'Adding Coke', stateKey: 'coke', description: 'Pouring coke into the glass', modbusAddress: 41 }
 };
 
 /**
@@ -145,6 +145,9 @@ export function getCocktailById(id, customIngredients = null) {
 					steps.push(ingredient);
 				}
 			});
+
+			// Sort steps by modbus address to show them in the correct execution order
+			steps.sort((a, b) => a.modbusAddress - b.modbusAddress);
 		}
 
 		// Always add "Drink Ready" as the final step
