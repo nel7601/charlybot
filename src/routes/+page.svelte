@@ -167,7 +167,7 @@
 	{/if}
 
 	<!-- Cocktail Menu -->
-	<section class="relative container mx-auto px-8 py-16 max-w-7xl">
+	<section class="relative container mx-auto px-8 py-16 ">
 		{#if initializing}
 			<!-- Initializing State -->
 			<div class="flex flex-col items-center justify-center py-32">
@@ -183,7 +183,7 @@
 				<div class="mt-6 h-1.5 w-32 mx-auto krka-accent-gradient rounded-full"></div>
 			</div>
 
-			<div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto" style="animation: fadeIn 0.8s ease-out;">
+			<div class="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-10  mx-auto" style="animation: fadeIn 0.8s ease-out;">
 				<!-- Regular Cocktails -->
 				{#each cocktails as cocktail, index}
 					<div style="animation: slideUp 0.5s ease-out {index * 0.1}s both;">

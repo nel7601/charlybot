@@ -14,12 +14,12 @@
 </script>
 
 <button
-	class="group relative overflow-hidden rounded-3xl card-glow cursor-pointer bg-white border-4 border-gray-200 hover:border-cyan-300 active:scale-95 transition-all"
+	class="group relative overflow-hidden rounded-3xl card-glow cursor-pointer bg-white border-4 border-gray-200 hover:border-cyan-300 active:scale-95 transition-all w-full aspect-square"
 	onclick={() => onSelect(cocktail.id)}
 	onmouseenter={() => isHovered = true}
 	onmouseleave={() => isHovered = false}
 >
-	<figure class="relative h-80 md:h-96 overflow-hidden">
+	<figure class="relative overflow-hidden">
 		<img
 			src={cocktail.imageUrl}
 			alt={cocktail.name}
@@ -35,7 +35,7 @@
 		<!-- Content -->
 		<div class="absolute inset-0 flex items-end p-8">
 			<div class="w-full">
-				<h2 class="text-4xl md:text-5xl font-bold text-white mb-3 transform transition-transform duration-300 group-hover:translate-y-[-4px] drop-shadow-lg">
+				<h2 class="text-4xl md:text-4xl font-bold text-white mb-3 transform transition-transform duration-300 group-hover:translate-y-[-4px] drop-shadow-lg">
 					{cocktail.name}
 				</h2>
 				<div class="w-20 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 rounded-full transform origin-left transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></div>

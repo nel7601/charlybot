@@ -30,8 +30,10 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^0.555.0",
+		"@sveltejs/adapter-node": "^5.4.0",
 		"@tailwindcss/vite": "^4.1.17",
 		"modbus-serial": "^8.0.23",
+		"openai": "^6.10.0",
 		"tailwindcss": "^4.1.17"
 	}
 }

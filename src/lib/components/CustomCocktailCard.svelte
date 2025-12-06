@@ -8,17 +8,17 @@
 </script>
 
 <button
-	class="group relative overflow-hidden rounded-3xl card-glow cursor-pointer bg-white border-4 border-cyan-400 hover:border-cyan-300 active:scale-95 transition-all w-full"
+	class="group relative bg-cyan-500 overflow-hidden rounded-3xl card-glow cursor-pointer border-4 border-cyan-400 hover:border-cyan-300 active:scale-95 transition-all w-full aspect-square"
 	onclick={onSelect}
 	onmouseenter={() => isHovered = true}
 	onmouseleave={() => isHovered = false}
 >
-	<div class="relative h-80 md:h-96 w-full overflow-hidden bg-gradient-to-br from-cyan-400 to-teal-600">
+	<div class="relative  w-full overflow-hidden bg-gradient-to-br from-cyan-400 to-teal-600">
 		<!-- Glow effect on hover -->
 		<div class="absolute inset-0 bg-gradient-to-t from-cyan-500/30 via-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
 		<!-- Content -->
-		<div class="absolute inset-0 flex items-center justify-center p-8">
+		<div class="absolute inset-0 flex items-center justify-center p-8 z-50">
 			<div class="flex flex-col items-center justify-center">
 				<div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 transform transition-transform duration-300 group-hover:scale-110">
 					<Sparkles class="w-12 h-12 text-white" />
