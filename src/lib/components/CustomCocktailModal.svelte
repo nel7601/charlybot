@@ -98,16 +98,16 @@
 
 {#if isOpen}
 <dialog class="modal modal-open" style="animation: fadeIn 0.3s ease-out;">
-	<div class="modal-box max-w-4xl w-full bg-white border-4 border-cyan-200 shadow-2xl" style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
+	<div class="modal-box max-w-2xl w-full bg-white border-4 border-cyan-200 shadow-2xl" style="animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);">
 		<!-- Header -->
-		<div class="flex items-center justify-between mb-8 pb-6 border-b-2 border-gray-200">
+		<div class="flex items-center justify-between mb-8">
 			<div class="flex items-center gap-4">
 				<div class="w-14 h-14 rounded-xl krka-accent-gradient flex items-center justify-center">
 					<Sparkles class="w-8 h-8 text-white" />
 				</div>
 				<div>
 					<h3 class="font-bold text-3xl md:text-4xl gradient-text">Customize Your Drink</h3>
-					<p class="text-lg md:text-xl text-gray-600 mt-1">Select your ingredients</p>
+					<p class="text-lg md:text-xl text-gray-600">Select your ingredients</p>
 				</div>
 			</div>
 			<button
@@ -136,7 +136,7 @@
 					{@const canSelect = canSelectIngredient(ingredient.id)}
 					{@const isDisabled = !canSelect && !isSelected}
 					<button
-						class="relative p-6 rounded-2xl border-4 transition-all duration-300 active:scale-95 {
+						class="relative p-6 rounded-2xl border-4 transition-all duration-300 active:scale-95 aspect-square {
 							isSelected
 								? 'bg-cyan-50 border-cyan-400 shadow-lg'
 								: isDisabled
@@ -165,7 +165,7 @@
 		</div>
 
 		<!-- Selected Count & Limits -->
-		<div class="mb-6 p-5 bg-gray-50 rounded-xl border-2 border-gray-200">
+		<!-- <div class="mb-6 p-5 bg-gray-50 rounded-xl border-2 border-gray-200">
 			<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
 				<div class="text-center">
 					<p class="text-lg text-gray-600 mb-1">Total Selected</p>
@@ -186,18 +186,18 @@
 					</p>
 				</div>
 			</div>
-		</div>
+		</div> -->
 
 		<!-- Action Buttons -->
 		<div class="flex gap-4">
-			<button
+			<!-- <button
 				class="btn btn-lg flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 border-0 text-xl md:text-2xl px-8 py-6 h-auto active:scale-95 transition-all"
 				onclick={handleClose}
 			>
 				Cancel
-			</button>
+			</button> -->
 			<button
-				class="btn btn-lg flex-1 krka-accent-gradient border-0 text-white hover:shadow-xl text-xl md:text-2xl px-8 py-6 h-auto active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+				class="btn btn-lg flex-1 krka-accent-gradient border-0 text-white hover:shadow-xl text-xl md:text-2xl p-4 h-auto active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
 				onclick={handleOrder}
 				disabled={selectedIngredients.length === 0}
 			>
