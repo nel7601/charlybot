@@ -1,5 +1,5 @@
 import { json } from '@sveltejs/kit';
-import { getModbusClient, isConnected } from '$lib/services/modbusClient.js';
+import { getModbusClient, isConnected, resetReconnectAttempts } from '$lib/services/modbusClient.js';
 import { cocktails } from '$lib/data/cocktails.js';
 
 /**
@@ -88,6 +88,9 @@ export async function GET() {
 
 	} catch (error) {
 		console.error('[Initial State] Error:', error);
+
+		// Reset reconnect attempts so next request can try again
+		resetReconnectAttempts();
 
 		return json({
 			robotReady: false,
