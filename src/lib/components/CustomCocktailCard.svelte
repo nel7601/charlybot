@@ -13,12 +13,12 @@
 	onmouseenter={() => isHovered = true}
 	onmouseleave={() => isHovered = false}
 >
-	<div class="relative  w-full overflow-hidden bg-gradient-to-br from-cyan-400 to-teal-600">
+	<div class="relative w-full h-full overflow-hidden bg-gradient-to-br from-cyan-400 to-teal-600">
 		<!-- Glow effect on hover -->
 		<div class="absolute inset-0 bg-gradient-to-t from-cyan-500/30 via-teal-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
 		<!-- Content -->
-		<div class="absolute inset-0 flex items-center justify-center p-8 z-50">
+		<div class="absolute inset-0 flex items-center justify-center p-8 z-10">
 			<div class="flex flex-col items-center justify-center">
 				<div class="w-20 h-20 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center mb-4 transform transition-transform duration-300 group-hover:scale-110">
 					<Sparkles class="w-12 h-12 text-white" />
@@ -26,7 +26,7 @@
 				<h2 class="text-4xl md:text-5xl font-bold text-white mb-3 text-center drop-shadow-lg transform transition-transform duration-300 group-hover:translate-y-[-4px]">
 					Customize
 				</h2>
-				<p class="text-xl md:text-2xl text-white text-center drop-shadow">Create your own drink</p>
+				<p class="text-xl md:text-2xl text-white/90 text-center drop-shadow-md">Create your own drink</p>
 			</div>
 		</div>
 
