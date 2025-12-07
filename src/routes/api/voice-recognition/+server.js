@@ -1,11 +1,11 @@
 import { json, error } from '@sveltejs/kit';
 import OpenAI from 'openai';
-import { OPENAI_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { cocktails } from '$lib/data/cocktails.js';
 
-const openai = new OpenAI({
-	apiKey: OPENAI_API_KEY
-});
+const openai = env.OPENAI_API_KEY ? new OpenAI({
+	apiKey: env.OPENAI_API_KEY
+}) : null;
 
 /**
  * Normalize text for comparison
@@ -61,7 +61,7 @@ export async function POST({ request }) {
 		}
 
 		// Verify API key is configured
-		if (!OPENAI_API_KEY) {
+		if (!env.OPENAI_API_KEY || !openai) {
 			throw error(500, 'OpenAI API key not configured');
 		}
 
