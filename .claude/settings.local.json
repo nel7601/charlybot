@@ -12,7 +12,13 @@
       "WebFetch(domain:unsplash.com)",
       "WebFetch(domain:ultimate.watch)",
       "Bash(pnpm dev:check:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(node --version:*)",
+      "Bash(git push:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm:*)"
     ],
     "deny": [],
     "ask": []

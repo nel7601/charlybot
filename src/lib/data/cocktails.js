@@ -88,7 +88,7 @@ export const cocktails = [
 	{
 		id: 'whiskey-highball',
 		name: 'Whiskey Highball',
-		imageUrl: 'https://www.thecocktaildb.com/images/media/drink/n0sx531504372951.jpg',
+		imageUrl: 'https://bevvyco.s3.amazonaws.com/img/drinks/wa/nmwa/highball-4de45d79d99c54d28ae535e11a5526dc-lg.jpg',
 		modbusAddress: 105,
 		category: 'whiskey',
 		steps: [
@@ -101,7 +101,7 @@ export const cocktails = [
 	{
 		id: 'whiskey-coke',
 		name: 'Whiskey and Coke',
-		imageUrl: 'https://images.unsplash.com/photo-1481671703460-040cb8a2d909?w=400&q=80',
+		imageUrl: 'https://bevvyco.s3.amazonaws.com/img/drinks/aa/liaa/whiskey-and-coke-5b5766b04fd7d1673ac4b7af52062899-lg.jpg?ts=1496502632000',
 		modbusAddress: 106,
 		category: 'whiskey',
 		steps: [
