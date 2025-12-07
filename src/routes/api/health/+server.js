@@ -1,32 +1,25 @@
 import { json } from '@sveltejs/kit';
-import { getModbusClient, isConnected } from '$lib/services/modbusClient.js';
+import { isConnected, resetReconnectAttempts } from '$lib/services/modbusClient.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
-	try {
-		if (!isConnected()) {
-			// Attempt to connect
-			await getModbusClient();
-		}
+	// Always return 200 OK for health check
+	// The app is healthy even if Modbus is not connected
 
-		return json({
-			status: 'healthy',
-			modbus: {
-				connected: isConnected(),
-				host: '192.168.1.100',
-				port: 502
-			},
-			timestamp: new Date().toISOString()
-		});
+	const modbusConnected = isConnected();
 
-	} catch (err) {
-		return json({
-			status: 'unhealthy',
-			modbus: {
-				connected: false,
-				error: err.message
-			},
-			timestamp: new Date().toISOString()
-		}, { status: 503 });
+	// Reset reconnect attempts so other endpoints can try again
+	if (!modbusConnected) {
+		resetReconnectAttempts();
 	}
+
+	return json({
+		status: 'healthy',
+		app: 'running',
+		modbus: {
+			connected: modbusConnected,
+			message: modbusConnected ? 'Connected' : 'Disconnected (app still operational)'
+		},
+		timestamp: new Date().toISOString()
+	});
 }
