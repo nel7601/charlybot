@@ -12,6 +12,83 @@
 	let stream = null;
 	let chunks = [];
 
+	// Audio visualization
+	let audioContext = null;
+	let analyser = null;
+	let dataArray = null;
+	let animationId = null;
+	let audioLevels = $state([0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2]);
+	let smoothedLevels = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2];
+
+	function setupAudioVisualization(audioStream) {
+		audioContext = new (window.AudioContext || window.webkitAudioContext)();
+		analyser = audioContext.createAnalyser();
+		analyser.fftSize = 256;
+
+		const source = audioContext.createMediaStreamSource(audioStream);
+		source.connect(analyser);
+
+		const bufferLength = analyser.frequencyBinCount;
+		dataArray = new Uint8Array(bufferLength);
+
+		updateAudioLevels();
+	}
+
+	function updateAudioLevels() {
+		if (!analyser || !isRecording) return;
+
+		animationId = requestAnimationFrame(updateAudioLevels);
+		analyser.getByteFrequencyData(dataArray);
+
+		// Create 7 bars with different frequency ranges for more natural effect
+		const bars = 7;
+		const centerBar = Math.floor(bars / 2);
+
+		// Calculate new levels for each bar with different frequency ranges
+		const newLevels = [];
+
+		for (let i = 0; i < bars; i++) {
+			// Map each bar to a different frequency range
+			// Lower bars (0,6) = low/high freq, center bars = mid freq (voice)
+			const distanceFromCenter = Math.abs(i - centerBar);
+			let startFreq, endFreq;
+
+			if (distanceFromCenter === 0) {
+				// Center bar - mid frequencies (voice range)
+				startFreq = Math.floor(dataArray.length * 0.1);
+				endFreq = Math.floor(dataArray.length * 0.3);
+			} else if (distanceFromCenter === 1) {
+				// Near center - mid-low and mid-high
+				startFreq = Math.floor(dataArray.length * 0.05);
+				endFreq = Math.floor(dataArray.length * 0.25);
+			} else if (distanceFromCenter === 2) {
+				// Second from center
+				startFreq = Math.floor(dataArray.length * 0.03);
+				endFreq = Math.floor(dataArray.length * 0.15);
+			} else {
+				// Outer bars - low frequencies
+				startFreq = Math.floor(dataArray.length * 0.01);
+				endFreq = Math.floor(dataArray.length * 0.1);
+			}
+
+			const bandData = dataArray.slice(startFreq, endFreq);
+			const average = bandData.reduce((a, b) => a + b, 0) / bandData.length;
+			const normalizedValue = average / 255;
+
+			// Apply smoothing
+			const smoothingFactor = 0.3;
+			smoothedLevels[i] = smoothedLevels[i] * (1 - smoothingFactor) + normalizedValue * smoothingFactor;
+
+			// Add minimum height and some random variation for naturalness
+			const minHeight = 0.15;
+			const maxHeight = 1.0;
+			newLevels[i] = Math.min(maxHeight, Math.max(minHeight, smoothedLevels[i] + Math.random() * 0.05));
+		}
+
+		// Update reactive state with new array
+		audioLevels = newLevels;
+	}
+
 	async function startRecording() {
 		try {
 			isRecording = true;
@@ -26,6 +103,9 @@
 			// Check if track is live and producing audio
 			const audioTrack = stream.getAudioTracks()[0];
 			console.log('[VoiceControl] Audio track:', audioTrack.label, 'enabled:', audioTrack.enabled, 'muted:', audioTrack.muted, 'readyState:', audioTrack.readyState);
+
+			// Setup audio visualization
+			setupAudioVisualization(stream);
 
 			console.log('[VoiceControl] Creating MediaRecorder...');
 			mediaRecorder = new MediaRecorder(stream);
@@ -79,8 +159,20 @@
 			stream.getTracks().forEach(track => track.stop());
 			stream = null;
 		}
+		if (animationId) {
+			cancelAnimationFrame(animationId);
+			animationId = null;
+		}
+		if (audioContext) {
+			audioContext.close();
+			audioContext = null;
+		}
+		analyser = null;
+		dataArray = null;
 		mediaRecorder = null;
 		chunks = [];
+		audioLevels = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2];
+		smoothedLevels = [0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2];
 	}
 
 	async function processAudio(audioBlob) {
@@ -120,13 +212,16 @@
 		}
 	}
 
-	function toggleRecording() {
-		if (isProcessing) return;
-		if (isRecording) {
-			stopRecording();
-		} else {
-			startRecording();
-		}
+	function handlePressStart(e) {
+		if (isProcessing || isRecording) return;
+		e.preventDefault();
+		startRecording();
+	}
+
+	function handlePressEnd(e) {
+		if (!isRecording || isProcessing) return;
+		e.preventDefault();
+		stopRecording();
 	}
 
 	$effect(() => {
@@ -141,15 +236,16 @@
 {#if isRecording}
 	<div class="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-md flex flex-col items-center justify-center">
 		<h2 class="text-5xl font-bold text-white mb-4">Listening...</h2>
-		<div class="flex items-center justify-center gap-2 mt-6">
-			<div class="w-3 h-12 bg-cyan-400 rounded-full animate-pulse"></div>
-			<div class="w-3 h-16 bg-cyan-400 rounded-full animate-pulse" style="animation-delay: 0.1s"></div>
-			<div class="w-3 h-20 bg-cyan-400 rounded-full animate-pulse" style="animation-delay: 0.2s"></div>
-			<div class="w-3 h-16 bg-cyan-400 rounded-full animate-pulse" style="animation-delay: 0.3s"></div>
-			<div class="w-3 h-12 bg-cyan-400 rounded-full animate-pulse" style="animation-delay: 0.4s"></div>
+		<div class="flex items-end justify-center gap-2 mt-6 h-32">
+			{#each audioLevels as level, i (i)}
+				<div
+					class="w-3 bg-gradient-to-t from-cyan-400 to-cyan-300 rounded-full transition-all duration-75 ease-out shadow-lg shadow-cyan-400/50"
+					style="height: {level * 100}px; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);"
+				></div>
+			{/each}
 		</div>
 		<p class="text-xl text-white/80 text-center max-w-md px-4 mt-8">
-			Speak the name of your cocktail, then click to stop
+			Speak the name of your cocktail, release to send
 		</p>
 	</div>
 {/if}
@@ -164,13 +260,18 @@
 
 <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
 	<button
-		onclick={toggleRecording}
+		onmousedown={handlePressStart}
+		onmouseup={handlePressEnd}
+		onmouseleave={handlePressEnd}
+		ontouchstart={handlePressStart}
+		ontouchend={handlePressEnd}
+		ontouchcancel={handlePressEnd}
 		disabled={isProcessing}
-		class="btn btn-circle btn-xl shadow-xl transition-all duration-200"
+		class="btn btn-circle btn-xl shadow-xl transition-all duration-200 select-none"
 		class:btn-error={isRecording}
 		class:btn-primary={!isRecording && !isProcessing}
 		class:btn-disabled={isProcessing}
-		class:animate-pulse={isRecording}
+		class:scale-110={isRecording}
 	>
 		{#if isProcessing}
 			<Loader2 class="w-6 h-6 animate-spin" />
