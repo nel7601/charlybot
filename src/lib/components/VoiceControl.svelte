@@ -194,19 +194,14 @@
 				throw new Error(data.message || 'Error processing audio');
 			}
 
-			transcript = data.transcript;
+			// Don't show transcript, only the result
+			// transcript = data.transcript;
 
 			if (data.success && data.cocktail) {
-				successMessage = `Detected: ${data.cocktail.name}!`;
-
-				// Wait a moment to show the message
-				setTimeout(() => {
-					onCocktailSelected(data.cocktail.id);
-					successMessage = '';
-					transcript = '';
-				}, 1500);
+				// Immediately trigger cocktail preparation
+				onCocktailSelected(data.cocktail.id);
 			} else {
-				errorMessage = data.message || 'Could not identify the cocktail.';
+				errorMessage = 'No se ha seleccionado coctel';
 			}
 
 		} catch (err) {
@@ -251,22 +246,20 @@
 		class="fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-md flex flex-col items-center justify-center"
 		style="animation: fadeIn 0.3s ease-out;"
 	>
-		<!-- Status text -->
+		<!-- Status text (always in same position) -->
 		<h2 class="text-5xl font-bold text-white mb-4">
 			{isSpeaking ? 'Listening...' : 'Ready to speak'}
 		</h2>
 
-		<!-- Sound wave indicator (visible when speaking) -->
-		{#if isSpeaking}
-			<div class="flex items-center justify-center gap-2 mt-6">
-				{#each Array(5) as _, i}
-					<div
-						class="w-2 bg-cyan-400 rounded-full transition-all duration-100"
-						style="height: {calculateBarHeight(audioLevel, i)}px"
-					></div>
-				{/each}
-			</div>
-		{/if}
+		<!-- Sound wave indicator (always visible, height changes with audio) -->
+		<div class="flex items-center justify-center gap-2 mt-6 h-16">
+			{#each Array(5) as _, i}
+				<div
+					class="w-2 rounded-full transition-all duration-100 {isSpeaking ? 'bg-cyan-400' : 'bg-cyan-400/30'}"
+					style="height: {calculateBarHeight(isSpeaking ? audioLevel : 0, i)}px"
+				></div>
+			{/each}
+		</div>
 
 		<!-- Instruction text -->
 		<p class="text-xl text-white/80 text-center max-w-md px-4 mt-8">
@@ -276,7 +269,7 @@
 {/if}
 
 <!-- Messages above button (center-aligned) -->
-{#if transcript || errorMessage || successMessage}
+{#if errorMessage || successMessage}
 	<div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 max-w-md w-full px-4">
 		{#if successMessage}
 			<div class="alert alert-success shadow-lg mb-2 bg-green-50 border-2 border-green-400">
@@ -287,15 +280,6 @@
 		{#if errorMessage}
 			<div class="alert alert-error shadow-lg mb-2 bg-red-50 border-2 border-red-300">
 				<span class="text-lg font-semibold">{errorMessage}</span>
-			</div>
-		{/if}
-
-		{#if transcript}
-			<div class="alert alert-info shadow-lg bg-blue-50 border-2 border-blue-300">
-				<div class="text-center">
-					<div class="text-sm opacity-70 mb-1">Transcript:</div>
-					<div class="text-lg font-semibold">{transcript}</div>
-				</div>
 			</div>
 		{/if}
 	</div>

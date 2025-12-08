@@ -8,46 +8,59 @@ const openai = env.OPENAI_API_KEY ? new OpenAI({
 }) : null;
 
 /**
- * Normalize text for comparison
- * @param {string} text
+ * Use GPT to intelligently identify cocktail from transcribed text
+ * @param {string} transcript - Text from Whisper transcription
+ * @returns {Promise<import('$lib/data/cocktails.js').Cocktail | null>}
  */
-function normalizeText(text) {
-	return text
-		.toLowerCase()
-		.normalize('NFD')
-		.replace(/[\u0300-\u036f]/g, '') // Remove accents
-		.replace(/[^a-z0-9\s]/g, '') // Remove special chars
-		.trim();
-}
+async function identifyCocktailWithGPT(transcript) {
+	try {
+		const completion = await openai.chat.completions.create({
+			model: 'gpt-4.1-nano',
+			messages: [
+				{
+					role: 'system',
+					content: `You are a bartender assistant. Analyze the customer's speech and identify which cocktail they want from the menu.
 
-/**
- * Find cocktail from transcribed text
- * @param {string} transcript
- */
-function findCocktailFromTranscript(transcript) {
-	const normalized = normalizeText(transcript);
+Available cocktails:
+- mojito (Mojito)
+- cuba-libre (Cuba Libre)
+- cubata (Cubata)
+- whiskey-rocks (Whiskey on the Rocks)
+- neat-whiskey (Neat Whiskey)
+- whiskey-highball (Whiskey Highball)
+- whiskey-coke (Whiskey and Coke)
 
-	// Build a map of possible names/keywords for each cocktail
-	const cocktailKeywords = {
-		'mojito': ['mojito'],
-		'cuba-libre': ['cuba libre', 'cubalibre', 'cuba'],
-		'cubata': ['cubata'],
-		'whiskey-rocks': ['whiskey on the rocks', 'whiskey rocks', 'whisky on the rocks', 'whisky rocks', 'whiskey con hielo'],
-		'neat-whiskey': ['neat whiskey', 'whiskey neat', 'whisky neat', 'whiskey solo', 'whisky solo'],
-		'whiskey-highball': ['whiskey highball', 'whisky highball', 'highball'],
-		'whiskey-coke': ['whiskey and coke', 'whiskey coke', 'whisky and coke', 'whisky coke', 'whiskey con coca', 'whisky con coca']
-	};
+Instructions:
+- If the customer mentions a cocktail from the menu, return ONLY the cocktail ID (e.g., "mojito", "cuba-libre")
+- Handle natural language: "quiero un mojito" → "mojito"
+- Handle changes: "mejor dame un whiskey" → use context to pick a whiskey option
+- If multiple whiskeys mentioned without specifics, prefer "whiskey-rocks"
+- If unclear or no cocktail mentioned, return "none"
+- Return ONLY the ID, nothing else`
+				},
+				{
+					role: 'user',
+					content: transcript
+				}
+			],
+			temperature: 0,
+			max_tokens: 20
+		});
 
-	// Check for each cocktail
-	for (const [cocktailId, keywords] of Object.entries(cocktailKeywords)) {
-		for (const keyword of keywords) {
-			if (normalized.includes(normalizeText(keyword))) {
-				return cocktails.find(c => c.id === cocktailId);
-			}
+		const cocktailId = completion.choices[0].message.content.trim().toLowerCase();
+
+		if (cocktailId === 'none' || !cocktailId) {
+			return null;
 		}
-	}
 
-	return null;
+		// Find the cocktail by ID
+		const cocktail = cocktails.find(c => c.id === cocktailId);
+		return cocktail || null;
+
+	} catch (err) {
+		console.error('GPT cocktail identification error:', err);
+		return null;
+	}
 }
 
 /** @type {import('./$types').RequestHandler} */
@@ -81,8 +94,8 @@ export async function POST({ request }) {
 
 		const transcript = transcription.text;
 
-		// Find matching cocktail
-		const cocktail = findCocktailFromTranscript(transcript);
+		// Use GPT to intelligently identify cocktail
+		const cocktail = await identifyCocktailWithGPT(transcript);
 
 		if (!cocktail) {
 			return json({
