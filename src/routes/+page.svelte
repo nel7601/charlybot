@@ -7,6 +7,7 @@
 	import CustomCocktailModal from '$lib/components/CustomCocktailModal.svelte';
 	import StatusMonitor from '$lib/components/StatusMonitor.svelte';
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
+	import VoiceControl from '$lib/components/VoiceControl.svelte';
 	import { Bot, AlertCircle, Loader2, Settings } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 
@@ -212,6 +213,9 @@
 	onClose={() => showCustomModal = false}
 	onOrder={handleCustomCocktailOrder}
 />
+
+<!-- Voice Control -->
+<VoiceControl onCocktailSelected={handleCocktailSelect} />
 
 <!-- Loading Overlay -->
 {#if loading}

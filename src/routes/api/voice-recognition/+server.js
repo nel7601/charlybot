@@ -72,12 +72,11 @@ export async function POST({ request }) {
 		// Create a File object with proper name
 		const file = new File([audioBlob], 'audio.webm', { type: audioFile.type });
 
-		// Transcribe audio using Whisper
+		// Transcribe audio using Whisper (auto-detect language)
 		const transcription = await openai.audio.transcriptions.create({
 			file: file,
 			model: 'whisper-1',
-			language: 'es', // Spanish, adjust if needed
-			prompt: 'Esta es una orden de cóctel. Posibles bebidas: mojito, cuba libre, cubata, whiskey on the rocks, neat whiskey, whiskey highball, whiskey and coke.'
+			prompt: 'Cocktail order. Drinks: mojito, cuba libre, cubata, whiskey on the rocks, neat whiskey, whiskey highball, whiskey and coke.'
 		});
 
 		const transcript = transcription.text;
@@ -89,7 +88,7 @@ export async function POST({ request }) {
 			return json({
 				success: false,
 				transcript,
-				message: 'No se pudo identificar el cóctel. Por favor, intenta de nuevo.',
+				message: 'Could not identify cocktail from your command. Please try again.',
 				availableCocktails: cocktails.map(c => c.name)
 			});
 		}
