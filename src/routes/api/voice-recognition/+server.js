@@ -8,20 +8,15 @@ const openai = env.OPENAI_API_KEY ? new OpenAI({
 }) : null;
 
 /**
- * Use GPT to intelligently identify cocktail from transcribed text
+ * Parse voice request and identify if it's a predefined cocktail or custom ingredients
  * @param {string} transcript - Text from Whisper transcription
- * @returns {Promise<import('$lib/data/cocktails.js').Cocktail | null>}
+ * @returns {Promise<{type: 'predefined'|'custom'|'none', cocktailId?: string, ingredients?: string[]}>}
  */
-async function identifyCocktailWithGPT(transcript) {
+async function parseVoiceRequestWithGPT(transcript) {
 	try {
-		const completion = await openai.chat.completions.create({
-			model: 'gpt-4.1-nano',
-			messages: [
-				{
-					role: 'system',
-					content: `You are a bartender assistant. Analyze the customer's speech and identify which cocktail they want from the menu.
+		const systemPrompt = `You are a bartender assistant AI. Analyze customer speech and identify their request.
 
-Available cocktails:
+AVAILABLE PREDEFINED COCKTAILS:
 - mojito (Mojito)
 - cuba-libre (Cuba Libre)
 - cubata (Cubata)
@@ -30,13 +25,51 @@ Available cocktails:
 - whiskey-highball (Whiskey Highball)
 - whiskey-coke (Whiskey and Coke)
 
-Instructions:
-- If the customer mentions a cocktail from the menu, return ONLY the cocktail ID (e.g., "mojito", "cuba-libre")
-- Handle natural language: "quiero un mojito" → "mojito"
-- Handle changes: "mejor dame un whiskey" → use context to pick a whiskey option
-- If multiple whiskeys mentioned without specifics, prefer "whiskey-rocks"
-- If unclear or no cocktail mentioned, return "none"
-- Return ONLY the ID, nothing else`
+AVAILABLE INGREDIENTS FOR CUSTOM DRINKS:
+- mint (menta, hierbabuena, mint leaves)
+- ice (hielo, ice cubes)
+- syrup (jarabe, sirope, sugar syrup)
+- lime (lima, limón, lime juice)
+- white-rum (ron blanco, white rum, light rum, rum)
+- dark-rum (ron negro, dark rum, black rum)
+- whiskey (whisky, bourbon)
+- soda (soda water, club soda, sparkling water)
+- coke (coca cola, cola, coke)
+
+DETECTION RULES:
+1. PREDEFINED COCKTAIL: If customer mentions a cocktail from the menu
+   - Return: {"type": "predefined", "cocktailId": "mojito"}
+
+2. PREDEFINED + EXTRAS: If customer mentions a known cocktail + extra ingredients
+   - ALWAYS return the predefined cocktail, IGNORE extras
+   - Example: "mojito with whiskey" → {"type": "predefined", "cocktailId": "mojito"}
+
+3. CUSTOM COCKTAIL: If customer wants to create their own drink
+   - Phrases indicating custom: "nuevo coctel", "mi propio coctel", "quiero hacer", "custom drink", "personalizado", "con [ingredients]"
+   - Extract ALL mentioned ingredients
+   - Return: {"type": "custom", "ingredients": ["mint", "ice", "white-rum"]}
+   - ONLY include ingredients from the available list above
+   - Map aliases to canonical IDs (e.g., "ron blanco" → "white-rum")
+
+4. UNCLEAR/NONE: If no clear request
+   - Return: {"type": "none"}
+
+RESPONSE FORMAT:
+Return ONLY a valid JSON object, nothing else. No markdown, no explanation.
+
+Examples:
+- "quiero un mojito" → {"type": "predefined", "cocktailId": "mojito"}
+- "mojito with extra whiskey" → {"type": "predefined", "cocktailId": "mojito"}
+- "nuevo coctel con menta, hielo y ron blanco" → {"type": "custom", "ingredients": ["mint", "ice", "white-rum"]}
+- "dame un coctel con whiskey y coca cola" → {"type": "custom", "ingredients": ["whiskey", "coke"]}
+- "quiero hacer mi propio coctel con hielo, lima y soda" → {"type": "custom", "ingredients": ["ice", "lime", "soda"]}`;
+
+		const completion = await openai.chat.completions.create({
+			model: 'gpt-4.1-nano',
+			messages: [
+				{
+					role: 'system',
+					content: systemPrompt
 				},
 				{
 					role: 'user',
@@ -44,22 +77,18 @@ Instructions:
 				}
 			],
 			temperature: 0,
-			max_tokens: 20
+			max_tokens: 100,
+			response_format: { type: "json_object" }
 		});
 
-		const cocktailId = completion.choices[0].message.content.trim().toLowerCase();
+		const responseText = completion.choices[0].message.content.trim();
+		const parsed = JSON.parse(responseText);
 
-		if (cocktailId === 'none' || !cocktailId) {
-			return null;
-		}
-
-		// Find the cocktail by ID
-		const cocktail = cocktails.find(c => c.id === cocktailId);
-		return cocktail || null;
+		return parsed;
 
 	} catch (err) {
-		console.error('GPT cocktail identification error:', err);
-		return null;
+		console.error('GPT voice parsing error:', err);
+		return { type: 'none' };
 	}
 }
 
@@ -94,25 +123,61 @@ export async function POST({ request }) {
 
 		const transcript = transcription.text;
 
-		// Use GPT to intelligently identify cocktail
-		const cocktail = await identifyCocktailWithGPT(transcript);
+		// Use GPT to parse the voice request
+		const voiceRequest = await parseVoiceRequestWithGPT(transcript);
 
-		if (!cocktail) {
+		// Handle predefined cocktail
+		if (voiceRequest.type === 'predefined') {
+			const cocktail = cocktails.find(c => c.id === voiceRequest.cocktailId);
+
+			if (!cocktail) {
+				return json({
+					success: false,
+					type: 'none',
+					transcript,
+					message: 'Cocktail not found in menu'
+				});
+			}
+
 			return json({
-				success: false,
+				success: true,
+				type: 'predefined',
 				transcript,
-				message: 'Could not identify cocktail from your command. Please try again.',
-				availableCocktails: cocktails.map(c => c.name)
+				cocktail: {
+					id: cocktail.id,
+					name: cocktail.name
+				}
 			});
 		}
 
-		return json({
-			success: true,
-			transcript,
-			cocktail: {
-				id: cocktail.id,
-				name: cocktail.name
+		// Handle custom cocktail
+		if (voiceRequest.type === 'custom') {
+			const ingredients = voiceRequest.ingredients || [];
+
+			if (ingredients.length === 0) {
+				return json({
+					success: false,
+					type: 'none',
+					transcript,
+					message: 'No valid ingredients detected. Please try again.'
+				});
 			}
+
+			return json({
+				success: true,
+				type: 'custom',
+				transcript,
+				ingredients
+			});
+		}
+
+		// Handle none/unclear
+		return json({
+			success: false,
+			type: 'none',
+			transcript,
+			message: 'Could not understand your request. Please try again.',
+			availableCocktails: cocktails.map(c => c.name)
 		});
 
 	} catch (err) {

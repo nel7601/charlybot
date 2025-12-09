@@ -215,7 +215,10 @@
 />
 
 <!-- Voice Control -->
-<VoiceControl onCocktailSelected={handleCocktailSelect} />
+<VoiceControl
+	onCocktailSelected={handleCocktailSelect}
+	onCustomCocktailSelected={handleCustomCocktailOrder}
+/>
 
 <!-- Loading Overlay -->
 {#if loading}

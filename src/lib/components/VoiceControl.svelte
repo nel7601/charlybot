@@ -2,7 +2,10 @@
 	import { Mic, MicOff, Loader2 } from '@lucide/svelte';
 	import { browser } from '$app/environment';
 
-	let { onCocktailSelected } = $props();
+	let {
+		onCocktailSelected,
+		onCustomCocktailSelected
+	} = $props();
 
 	let isRecording = $state(false);
 	let isProcessing = $state(false);
@@ -197,12 +200,20 @@
 				throw new Error(data.message || 'Error processing audio');
 			}
 
-			if (data.success && data.cocktail) {
-				console.log('[VoiceControl] ✅ Cocktail:', data.cocktail.name, data.cocktail.id);
-				onCocktailSelected?.(data.cocktail.id);
+			// Handle different response types
+			if (data.success) {
+				if (data.type === 'predefined' && data.cocktail) {
+					console.log('[VoiceControl] ✅ Predefined Cocktail:', data.cocktail.name, data.cocktail.id);
+					onCocktailSelected?.(data.cocktail.id);
+				} else if (data.type === 'custom' && data.ingredients) {
+					console.log('[VoiceControl] ✅ Custom Cocktail:', data.ingredients);
+					onCustomCocktailSelected?.(data.ingredients);
+				} else {
+					errorMessage = 'Unexpected response format';
+				}
 			} else {
-				console.log('[VoiceControl] No cocktail. Transcript:', data.transcript);
-				errorMessage = 'No cocktail detected';
+				console.log('[VoiceControl] No match. Transcript:', data.transcript);
+				errorMessage = data.message || 'Could not understand your request';
 			}
 		} catch (err) {
 			console.error('[VoiceControl] Error:', err);
@@ -245,7 +256,7 @@
 			{/each}
 		</div>
 		<p class="text-xl text-white/80 text-center max-w-md px-4 mt-8">
-			Speak the name of your cocktail, release to send
+			Speak a cocktail name or describe your custom drink ingredients
 		</p>
 	</div>
 {/if}
