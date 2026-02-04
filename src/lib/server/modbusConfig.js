@@ -33,6 +33,7 @@ function loadConfig() {
 			const data = readFileSync(CONFIG_FILE_PATH, 'utf-8');
 			const config = JSON.parse(data);
 			console.log('[ModbusConfig] Loaded configuration from file:', config);
+			// File config takes priority over env vars
 			return { ...DEFAULT_CONFIG, ...config };
 		}
 	} catch (error) {
@@ -41,7 +42,7 @@ function loadConfig() {
 	}
 
 	console.log('[ModbusConfig] Using default configuration:', DEFAULT_CONFIG);
-	return DEFAULT_CONFIG;
+	return { ...DEFAULT_CONFIG };
 }
 
 /**
@@ -76,8 +77,23 @@ export function getConfig() {
  * @returns {ModbusConfig}
  */
 export function updateConfig(updates) {
+	// Load current config from file (not from cache) to get the actual stored values
+	let fileConfig;
+	try {
+		if (existsSync(CONFIG_FILE_PATH)) {
+			const data = readFileSync(CONFIG_FILE_PATH, 'utf-8');
+			fileConfig = JSON.parse(data);
+		} else {
+			fileConfig = { ...DEFAULT_CONFIG };
+		}
+	} catch (error) {
+		fileConfig = { ...DEFAULT_CONFIG };
+	}
+
+	// Merge file config with updates (file config takes priority over env vars)
 	currentConfig = {
-		...getConfig(),
+		...DEFAULT_CONFIG,
+		...fileConfig,
 		...updates
 	};
 	saveConfig(currentConfig);
