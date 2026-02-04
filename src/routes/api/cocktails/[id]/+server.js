@@ -1,6 +1,7 @@
 import { json, error } from '@sveltejs/kit';
 import { getModbusClient } from '$lib/services/modbusClient.js';
 import { getCocktailById } from '$lib/data/cocktails.js';
+import { getCocktailWriteAddresses, ADDRESS_RANGES } from '$lib/modbus/registry.js';
 
 const MODBUS_WRITE_DELAY_MS = 50; // Delay between Modbus write operations (good practice)
 
@@ -13,40 +14,6 @@ function delay(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**
- * Map cocktail IDs to their ingredient addresses
- */
-const COCKTAIL_RECIPES = {
-	'mojito': {
-		address: 100,
-		ingredients: [132, 133, 135, 136, 134, 137, 140, 142, 143] // mint, muddling, syrup, lime, ice, white-rum, soda, stirring, straw
-	},
-	'cuba-libre': {
-		address: 101,
-		ingredients: [134, 137, 136, 141, 142, 143] // ice, white-rum, lime, coke, stirring, straw
-	},
-	'cubata': {
-		address: 102,
-		ingredients: [134, 138, 141, 142, 143] // ice, dark-rum, coke, stirring, straw
-	},
-	'whiskey-rocks': {
-		address: 103,
-		ingredients: [134, 139] // ice, whiskey
-	},
-	'neat-whiskey': {
-		address: 104,
-		ingredients: [139] // whiskey only
-	},
-	'whiskey-highball': {
-		address: 105,
-		ingredients: [134, 139, 140, 142, 143] // ice, whiskey, soda, stirring, straw
-	},
-	'whiskey-coke': {
-		address: 106,
-		ingredients: [134, 139, 141, 142, 143] // ice, whiskey, coke, stirring, straw
-	}
-};
-
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ params }) {
 	const cocktailId = params.id;
@@ -56,7 +23,7 @@ export async function POST({ params }) {
 		throw error(404, `Cocktail ${cocktailId} not found`);
 	}
 
-	const recipe = COCKTAIL_RECIPES[cocktailId];
+	const recipe = getCocktailWriteAddresses(cocktailId);
 	if (!recipe) {
 		throw error(404, `Recipe not found for cocktail ${cocktailId}`);
 	}
@@ -69,9 +36,9 @@ export async function POST({ params }) {
 		// Address 92 = 0 (waitingRecipe = false) means robot is BUSY
 		// All variables are COILS in RobotStudio
 		try {
-			const readyCheck = await client.readCoils(92, 1);
+			const readyCheck = await client.readCoils(ADDRESS_RANGES.SYSTEM_START + 2, 1); // 92 = 90 + 2
 			const waitingRecipe = readyCheck.data[0];
-			console.log(`[Modbus] Robot status check - Address 92 (waitingRecipe) = ${waitingRecipe ? 1 : 0}`);
+			console.log(`[Modbus] Robot status check - Address ${ADDRESS_RANGES.SYSTEM_START + 2} (waitingRecipe) = ${waitingRecipe ? 1 : 0}`);
 
 			if (waitingRecipe === false) {
 				// Robot is busy (92 = 0)

@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { getModbusClient } from '$lib/services/modbusClient.js';
+import { getResetAddresses } from '$lib/modbus/registry.js';
 
 const MODBUS_WRITE_DELAY_MS = 50; // Delay between Modbus write operations
 
@@ -23,11 +24,13 @@ export async function POST() {
 
 		console.log('[Reset] Starting address reset (triggered by 91 = 1)...');
 
-		// Reset cocktail addresses (100-107)
-		const COCKTAIL_ADDRESSES = [100, 101, 102, 103, 104, 105, 106, 107];
-		console.log('[Reset] Resetting cocktail addresses (100-107)...');
+		// Get reset addresses from registry
+		const resetAddresses = getResetAddresses();
 
-		for (const address of COCKTAIL_ADDRESSES) {
+		// Reset cocktail addresses
+		console.log(`[Reset] Resetting cocktail addresses (${resetAddresses.cocktails[0]}-${resetAddresses.cocktails[resetAddresses.cocktails.length - 1]})...`);
+
+		for (const address of resetAddresses.cocktails) {
 			try {
 				await client.writeCoil(address, false);
 				console.log(`[Reset]   ✓ Address ${address} = 0`);
@@ -37,11 +40,10 @@ export async function POST() {
 			}
 		}
 
-		// Reset ingredient addresses (132-143)
-		const INGREDIENT_ADDRESSES = [132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143];
-		console.log('[Reset] Resetting ingredient addresses (132-143)...');
+		// Reset ingredient addresses
+		console.log(`[Reset] Resetting ingredient addresses (${resetAddresses.ingredients[0]}-${resetAddresses.ingredients[resetAddresses.ingredients.length - 1]})...`);
 
-		for (const address of INGREDIENT_ADDRESSES) {
+		for (const address of resetAddresses.ingredients) {
 			try {
 				await client.writeCoil(address, false);
 				console.log(`[Reset]   ✓ Ingredient address ${address} = 0`);
@@ -51,10 +53,10 @@ export async function POST() {
 			}
 		}
 
-		// Reset start signal (96)
+		// Reset start signal
 		try {
-			await client.writeCoil(96, false);
-			console.log('[Reset]   ✓ Start signal (96) = 0');
+			await client.writeCoil(resetAddresses.startSignal, false);
+			console.log(`[Reset]   ✓ Start signal (${resetAddresses.startSignal}) = 0`);
 		} catch (err) {
 			console.error(`[Reset]   ✗ Failed to reset start signal:`, err.message);
 		}

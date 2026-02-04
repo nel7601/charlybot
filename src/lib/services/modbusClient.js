@@ -1,11 +1,22 @@
 import ModbusRTU from 'modbus-serial';
 import { getConfig } from '$lib/server/modbusConfig.js';
+import { getMockClient, resetMockClient, getCurrentMockInstance } from './modbusMockClient.js';
+import { env } from '$env/dynamic/private';
 
 /** @typedef {Object} ModbusConnectionConfig
  * @property {string} host - Modbus TCP host
  * @property {number} port - Modbus TCP port
  * @property {number} unitId - Slave/Unit ID
  */
+
+/**
+ * Check if mock mode is enabled
+ * @returns {boolean}
+ */
+function isMockMode() {
+	const mockMode = env.MOCK_MODBUS;
+	return mockMode === 'true' || mockMode === '1';
+}
 
 /** @type {ModbusRTU | null} */
 let client = null;
@@ -35,6 +46,12 @@ console.log(`[Modbus] Initial Configuration: ${initialConfig.host}:${initialConf
  * @returns {Promise<ModbusRTU>}
  */
 export async function getModbusClient() {
+	// Use mock client if mock mode is enabled
+	if (isMockMode()) {
+		console.log('[Modbus] Using MOCK client (MOCK_MODBUS=true)');
+		return await getMockClient();
+	}
+
 	// Return existing connection if available
 	if (client && client.isOpen) {
 		reconnectAttempts = 0; // Reset on successful connection
@@ -146,6 +163,10 @@ export function forceReconnect() {
  * @returns {boolean}
  */
 export function isConnected() {
+	if (isMockMode()) {
+		const mockInstance = getCurrentMockInstance();
+		return mockInstance !== null && mockInstance.isOpen;
+	}
 	return client !== null && client.isOpen;
 }
 
@@ -155,3 +176,33 @@ export function isConnected() {
 export function resetReconnectAttempts() {
 	reconnectAttempts = 0;
 }
+
+/**
+ * Check if mock mode is enabled (exported for testing)
+ * @returns {boolean}
+ */
+export function getMockMode() {
+	return isMockMode();
+}
+
+/**
+ * Get mock client instance (for testing/control)
+ * Only returns a client if mock mode is enabled
+ * @returns {import('./modbusMockClient.js').ModbusMockClient | null}
+ */
+export function getMockClientInstance() {
+	if (isMockMode()) {
+		return getCurrentMockInstance();
+	}
+	return null;
+}
+
+/**
+ * Reset mock client state (for testing)
+ */
+export function resetMockState() {
+	if (isMockMode()) {
+		resetMockClient();
+	}
+}
+

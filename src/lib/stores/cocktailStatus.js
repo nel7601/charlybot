@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { getCocktailById } from '$lib/data/cocktails.js';
+import { createDefaultRobotState } from '$lib/modbus/registry.js';
 
 /**
  * @typedef {Object} RobotState
@@ -32,21 +33,7 @@ import { getCocktailById } from '$lib/data/cocktails.js';
 export const cocktailStatus = writable({
 	activeCocktailId: null,
 	customIngredients: null,
-	robotState: {
-		mint: false,         // Address 32
-		muddling: false,     // Address 33
-		ice: false,          // Address 34
-		syrup: false,        // Address 35
-		lime: false,         // Address 36
-		whiteRum: false,     // Address 37
-		darkRum: false,      // Address 38
-		whiskey: false,      // Address 39
-		soda: false,         // Address 40
-		coke: false,         // Address 41
-		cupHolder: false,    // Address 90
-		drinkReady: false,   // Address 91
-		waitingRecipe: false // Address 92
-	},
+	robotState: createDefaultRobotState(),
 	isConnected: false,
 	error: null,
 	progress: 0
